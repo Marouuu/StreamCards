@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import Background3D from './components/Background3D'
 import Dashboard from './pages/Dashboard'
+import Shop from './pages/Shop'
 import { api } from './config/api'
 import { getToken, setToken, removeToken } from './utils/auth'
 
 function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState('dashboard') // 'dashboard' or 'shop'
 
   // Check for OAuth callback token
   useEffect(() => {
@@ -95,7 +97,7 @@ function App() {
               <button className="coins-btn">
                 💰 {user.coins || 0}
               </button>
-              <button className="shop-btn">
+              <button className="shop-btn" onClick={() => setCurrentPage('shop')}>
                 🛒 SHOP
               </button>
               <button onClick={handleLogout} className="logout-btn">
@@ -112,7 +114,14 @@ function App() {
 
       <main className="app-main">
         {user ? (
-          <Dashboard />
+          currentPage === 'shop' ? (
+            <Shop 
+              onBack={() => setCurrentPage('dashboard')}
+              onUserUpdate={setUser}
+            />
+          ) : (
+            <Dashboard />
+          )
         ) : (
           <>
             <section className="hero">
