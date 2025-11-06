@@ -9,6 +9,7 @@ function Dashboard() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [channelSort, setChannelSort] = useState('watched'); // 'watched', 'viewers', or 'name'
+  const [addingCoins, setAddingCoins] = useState(false);
   
   // Filtres pour la collection
   const [filters, setFilters] = useState({
@@ -88,6 +89,26 @@ function Dashboard() {
   const uniqueStreamers = [...new Map(cards.map(card => [card.streamer_id, { id: card.streamer_id, name: card.streamer_display_name || card.streamer_name }])).values()];
 
   // Trier les chaînes selon le filtre sélectionné
+  const handleAddCoins = async () => {
+    if (addingCoins) return;
+    
+    setAddingCoins(true);
+    try {
+      const result = await api.addCoins(1000000);
+      // Refresh user data
+      const userData = await api.getCurrentUser();
+      if (userData) {
+        setUser(userData);
+      }
+      alert(`✅ ${result.addedCoins.toLocaleString()} coins ajoutés ! Total: ${result.newCoins.toLocaleString()}`);
+    } catch (error) {
+      console.error('Error adding coins:', error);
+      alert('Erreur lors de l\'ajout de coins');
+    } finally {
+      setAddingCoins(false);
+    }
+  };
+
   const sortedChannels = [...followedChannels].sort((a, b) => {
     if (channelSort === 'watched') {
       // Trier par date de suivi (les plus récemment suivies en premier)
@@ -138,6 +159,13 @@ function Dashboard() {
               <span className="stat-value">{uniqueStreamers.length}</span>
             </div>
           </div>
+          <button 
+            className="add-coins-btn"
+            onClick={handleAddCoins}
+            disabled={addingCoins}
+          >
+            {addingCoins ? 'Ajout...' : '💰 +1M Coins'}
+          </button>
         </div>
 
         {/* Chaînes suivies */}

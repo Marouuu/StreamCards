@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../config/api';
 import { getToken, setToken } from '../utils/auth';
+import BoosterOpening from '../components/BoosterOpening';
 import './Shop.css';
 
 function Shop({ onBack, onUserUpdate }) {
@@ -9,6 +10,8 @@ function Shop({ onBack, onUserUpdate }) {
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [openingBooster, setOpeningBooster] = useState(null);
+  const [openedCards, setOpenedCards] = useState([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -81,11 +84,16 @@ function Shop({ onBack, onUserUpdate }) {
         },
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        throw new Error('Réponse invalide du serveur');
+      }
 
       if (response.ok) {
-        setMessage({ type: 'success', text: `Achat réussi ! Vous avez obtenu ${data.cards?.length || 0} carte(s).` });
-        
         // Update token if new token provided
         if (data.newToken) {
           setToken(data.newToken);
@@ -101,15 +109,20 @@ function Shop({ onBack, onUserUpdate }) {
           }
         }
 
-        setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+        // Ouvrir le booster en 3D
+        setOpenedCards(data.cards || []);
+        setOpeningBooster(booster);
       } else {
-        setMessage({ type: 'error', text: data.error || 'Erreur lors de l\'achat' });
-        setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+        const errorMessage = data.error || data.message || 'Erreur lors de l\'achat';
+        console.error('Purchase error:', errorMessage);
+        setMessage({ type: 'error', text: errorMessage });
+        setTimeout(() => setMessage({ type: '', text: '' }), 5000);
       }
     } catch (error) {
       console.error('Error purchasing booster:', error);
-      setMessage({ type: 'error', text: 'Erreur lors de l\'achat' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      const errorMessage = error.message || 'Erreur de connexion au serveur';
+      setMessage({ type: 'error', text: errorMessage });
+      setTimeout(() => setMessage({ type: '', text: '' }), 5000);
     } finally {
       setPurchasing(null);
     }
@@ -125,7 +138,20 @@ function Shop({ onBack, onUserUpdate }) {
   }
 
   return (
-    <div className="shop">
+    <>
+      {openingBooster && (
+        <BoosterOpening
+          booster={openingBooster}
+          cards={openedCards}
+          onClose={() => {
+            setOpeningBooster(null);
+            setOpenedCards([]);
+            setMessage({ type: 'success', text: `Achat réussi ! Vous avez obtenu ${openedCards.length} carte(s).` });
+            setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+          }}
+        />
+      )}
+      <div className="shop">
       <div className="shop-header">
         {onBack && (
           <button className="shop-back-btn" onClick={onBack}>
@@ -204,6 +230,7 @@ function Shop({ onBack, onUserUpdate }) {
         </button>
       </div>
     </div>
+    </>
   );
 }
 

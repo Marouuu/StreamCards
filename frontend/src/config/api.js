@@ -46,6 +46,36 @@ export const api = {
   getBoosters: () => `${API_BASE_URL}/shop/boosters`,
   purchaseBooster: (boosterId) => `${API_BASE_URL}/shop/boosters/${boosterId}/purchase`,
   openBooster: (boosterId) => `${API_BASE_URL}/shop/boosters/${boosterId}/open`,
+  
+  // User
+  addCoins: async (amount = 1000000) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) {
+      throw new Error('No token found');
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/user/add-coins`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ amount }),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to add coins');
+    }
+    
+    const data = await response.json();
+    // Update token in localStorage
+    if (data.newToken) {
+      localStorage.setItem('streamcards_token', data.newToken);
+    }
+    
+    return data;
+  },
 };
 
 export default api;
