@@ -1,5 +1,5 @@
 import express from 'express';
-import { verifyToken } from '../utils/jwt.js';
+import { verifyToken, generateToken } from '../utils/jwt.js';
 import { getFollowedChannels, getUsersInfo, getStreamsInfo } from '../services/twitchApi.js';
 
 const router = express.Router();
@@ -84,6 +84,37 @@ router.get('/followed', authenticate, async (req, res) => {
   } catch (error) {
     console.error('Error fetching followed channels:', error);
     res.status(500).json({ error: 'Failed to fetch followed channels' });
+  }
+});
+
+// Add coins to user (development route)
+router.post('/add-coins', authenticate, (req, res) => {
+  try {
+    const { amount = 1000000 } = req.body; // Default 1 million
+    const currentCoins = req.user.coins || 0;
+    const newCoins = currentCoins + amount;
+
+    // Generate new token with updated coins
+    const newToken = generateToken(
+      {
+        id: req.user.twitchId,
+        login: req.user.username,
+        display_name: req.user.displayName,
+        profile_image_url: req.user.profileImageUrl
+      },
+      req.user.twitchAccessToken,
+      newCoins
+    );
+
+    res.json({
+      success: true,
+      newCoins: newCoins,
+      addedCoins: amount,
+      newToken: newToken
+    });
+  } catch (error) {
+    console.error('Error adding coins:', error);
+    res.status(500).json({ error: 'Failed to add coins' });
   }
 });
 
