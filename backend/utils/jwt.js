@@ -3,14 +3,14 @@ import jwt from 'jsonwebtoken';
 /**
  * Generate JWT token for user (with Twitch data)
  */
-export function generateToken(twitchUser, twitchAccessToken) {
+export function generateToken(twitchUser, twitchAccessToken, coins = 0) {
   const payload = {
     twitchId: twitchUser.id,
     username: twitchUser.login,
     displayName: twitchUser.display_name,
     profileImageUrl: twitchUser.profile_image_url,
     twitchAccessToken: twitchAccessToken, // Store access token for API calls
-    coins: 0, // Default coins
+    coins: coins, // Coins amount
   };
 
   return jwt.sign(payload, process.env.JWT_SECRET, {
