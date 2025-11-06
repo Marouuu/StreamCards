@@ -25,6 +25,7 @@ export async function getFollowedChannels(accessToken, clientId, userId) {
         profile_image_url: null, // Will need separate call for profile images
         thumbnail_url: null,
         viewer_count: null, // Will need separate call for viewer count
+        followed_at: channel.followed_at, // Date when user started following
       }));
     }
     return [];

@@ -69,11 +69,16 @@ router.get('/followed', authenticate, async (req, res) => {
         viewer_count: streamInfo?.viewer_count || 0,
         is_live: !!streamInfo,
         game_name: streamInfo?.game_name || null,
+        followed_at: channel.followed_at, // Date when user started following
       };
     });
 
-    // Sort by viewer count (highest first)
-    enrichedChannels.sort((a, b) => b.viewer_count - a.viewer_count);
+    // Sort by followed_at (most recently followed first) - this indicates channels user watches most
+    enrichedChannels.sort((a, b) => {
+      const dateA = new Date(a.followed_at || 0);
+      const dateB = new Date(b.followed_at || 0);
+      return dateB - dateA; // Most recent first
+    });
 
     res.json({ channels: enrichedChannels });
   } catch (error) {
