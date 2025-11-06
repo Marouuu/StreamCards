@@ -1,12 +1,20 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { pool } from './config/database.js';
 import authRoutes from './routes/auth.routes.js';
 import cardsRoutes from './routes/cards.routes.js';
 import shopRoutes from './routes/shop.routes.js';
+import userRoutes from './routes/user.routes.js';
 
-dotenv.config();
+// Get current directory for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load .env file from backend directory
+dotenv.config({ path: join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -35,6 +43,7 @@ app.get('/api/test-db', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/cards', cardsRoutes);
 app.use('/api/shop', shopRoutes);
+app.use('/api/user', userRoutes);
 
 // Start server
 app.listen(PORT, () => {
