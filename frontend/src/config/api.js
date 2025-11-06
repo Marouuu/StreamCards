@@ -7,7 +7,36 @@ export const api = {
   
   // Auth
   twitchLogin: () => `${API_BASE_URL}/auth/twitch`,
-  twitchCallback: (code) => `${API_BASE_URL}/auth/twitch/callback?code=${code}`,
+  getCurrentUser: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) {
+      console.log('No token in localStorage');
+      return null;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      console.log('Auth response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Auth error:', errorText);
+        return null;
+      }
+      
+      const data = await response.json();
+      console.log('Auth data:', data);
+      return data;
+    } catch (error) {
+      console.error('Fetch error:', error);
+      return null;
+    }
+  },
   
   // Cards
   getStreamerCards: (streamerId) => `${API_BASE_URL}/cards/streamer/${streamerId}`,
