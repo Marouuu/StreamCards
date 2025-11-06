@@ -92,7 +92,12 @@ function App() {
                 />
               )}
               <span>Welcome, {user.displayName || user.username}!</span>
-              <span>Coins: {user.coins || 0}</span>
+              <button className="coins-btn">
+                💰 {user.coins || 0}
+              </button>
+              <button className="shop-btn">
+                🛒 SHOP
+              </button>
               <button onClick={handleLogout} className="logout-btn">
                 Logout
               </button>

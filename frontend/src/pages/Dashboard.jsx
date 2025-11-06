@@ -8,6 +8,7 @@ function Dashboard() {
   const [followedChannels, setFollowedChannels] = useState([]);
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [channelSort, setChannelSort] = useState('watched'); // 'watched', 'viewers', or 'name'
   
   // Filtres pour la collection
   const [filters, setFilters] = useState({
@@ -86,6 +87,21 @@ function Dashboard() {
   const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
   const uniqueStreamers = [...new Map(cards.map(card => [card.streamer_id, { id: card.streamer_id, name: card.streamer_display_name || card.streamer_name }])).values()];
 
+  // Trier les chaînes selon le filtre sélectionné
+  const sortedChannels = [...followedChannels].sort((a, b) => {
+    if (channelSort === 'watched') {
+      // Trier par date de suivi (les plus récemment suivies en premier)
+      // Cela indique les chaînes que l'utilisateur regarde le plus
+      const dateA = new Date(a.followed_at || 0);
+      const dateB = new Date(b.followed_at || 0);
+      return dateB - dateA; // Plus récent en premier
+    } else if (channelSort === 'viewers') {
+      return (b.viewer_count || 0) - (a.viewer_count || 0);
+    } else {
+      return (a.display_name || '').localeCompare(b.display_name || '');
+    }
+  });
+
   if (loading) {
     return (
       <div className="dashboard-loading">
@@ -126,11 +142,22 @@ function Dashboard() {
 
         {/* Chaînes suivies */}
         <div className="followed-channels-card">
-          <h3>Chaînes suivies</h3>
+          <div className="channels-header">
+            <h3>Chaînes suivies</h3>
+            <select 
+              value={channelSort} 
+              onChange={(e) => setChannelSort(e.target.value)}
+              className="channel-sort-select"
+            >
+              <option value="watched">Mes chaînes (plus regardées)</option>
+              <option value="viewers">Plus populaires</option>
+              <option value="name">Par nom</option>
+            </select>
+          </div>
           <div className="channels-list">
-            {followedChannels.length > 0 ? (
-              followedChannels.slice(0, 10).map((channel) => (
-                <div key={channel.id} className="channel-item">
+            {sortedChannels.length > 0 ? (
+              sortedChannels.slice(0, 10).map((channel) => (
+                <div key={channel.id} className={`channel-item ${channel.is_live ? 'live' : ''}`}>
                   <img 
                     src={channel.profile_image_url || channel.thumbnail_url} 
                     alt={channel.display_name}
@@ -138,8 +165,14 @@ function Dashboard() {
                   />
                   <div className="channel-info">
                     <span className="channel-name">{channel.display_name}</span>
-                    {channel.viewer_count !== undefined && (
-                      <span className="channel-viewers">{channel.viewer_count} viewers</span>
+                    {channel.is_live ? (
+                      <span className="channel-viewers live-indicator">
+                        🔴 LIVE • {channel.viewer_count || 0} viewers
+                      </span>
+                    ) : (
+                      channel.viewer_count !== undefined && (
+                        <span className="channel-viewers">{channel.viewer_count} viewers</span>
+                      )
                     )}
                   </div>
                 </div>

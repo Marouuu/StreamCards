@@ -1,10 +1,11 @@
 .dashboard {
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 300px 1fr;
   gap: 2rem;
   padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
   min-height: calc(100vh - 80px);
 }
 
@@ -94,10 +95,46 @@
   padding: 1.5rem;
 }
 
+.channels-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
 .followed-channels-card h3 {
-  margin: 0 0 1rem 0;
+  margin: 0;
   color: white;
   font-size: 1.25rem;
+}
+
+.channel-sort-select {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-family: inherit;
+}
+
+.channel-sort-select:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.channel-sort-select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.channel-sort-select option {
+  background: #2a2a3e;
+  color: white;
 }
 
 .channels-list {
@@ -106,6 +143,33 @@
   gap: 0.75rem;
   max-height: 500px;
   overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Modern scrollbar styling */
+.channels-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.channels-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.channels-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.channels-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Firefox scrollbar */
+.channels-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
 }
 
 .channel-item {
@@ -116,11 +180,40 @@
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .channel-item:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateX(5px);
+}
+
+.channel-item.live {
+  border-left: 3px solid #ef4444;
+}
+
+.channel-item.live::before {
+  content: '';
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
 }
 
 .channel-avatar {
@@ -147,6 +240,14 @@
   font-size: 0.8rem;
 }
 
+.channel-viewers.live-indicator {
+  color: #ef4444;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .no-channels {
   color: rgba(255, 255, 255, 0.6);
   text-align: center;
@@ -158,6 +259,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
+  min-width: 0; /* Permet au contenu de se rétrécir si nécessaire */
 }
 
 .collection-filters {
@@ -216,9 +319,10 @@
 /* Cards Grid */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.5rem;
   padding: 1rem 0;
+  width: 100%;
 }
 
 .card-item {
