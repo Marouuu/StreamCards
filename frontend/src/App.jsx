@@ -3,6 +3,7 @@ import './App.css'
 import Background3D from './components/Background3D'
 import Dashboard from './pages/Dashboard'
 import Shop from './pages/Shop'
+import PackManager from './pages/PackManager'
 import { api } from './config/api'
 import { getToken, setToken, removeToken } from './utils/auth'
 
@@ -100,6 +101,9 @@ function App() {
               <button className="shop-btn" onClick={() => setCurrentPage('shop')}>
                 🛒 SHOP
               </button>
+              <button className="packs-btn" onClick={() => setCurrentPage('pack-manager')}>
+                🎴 MES PACKS
+              </button>
               <button onClick={handleLogout} className="logout-btn">
                 Logout
               </button>
@@ -115,10 +119,12 @@ function App() {
       <main className="app-main">
         {user ? (
           currentPage === 'shop' ? (
-            <Shop 
+            <Shop
               onBack={() => setCurrentPage('dashboard')}
               onUserUpdate={setUser}
             />
+          ) : currentPage === 'pack-manager' ? (
+            <PackManager onBack={() => setCurrentPage('dashboard')} />
           ) : (
             <Dashboard />
           )

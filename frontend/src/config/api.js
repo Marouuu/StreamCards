@@ -47,6 +47,62 @@ export const api = {
   purchaseBooster: (boosterId) => `${API_BASE_URL}/shop/boosters/${boosterId}/purchase`,
   openBooster: (boosterId) => `${API_BASE_URL}/shop/boosters/${boosterId}/open`,
   
+  // Pack Management
+  getMyPacks: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) return [];
+    const res = await fetch(`${API_BASE_URL}/packs`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.packs || [];
+  },
+
+  createPack: async (packData) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/packs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(packData),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to create pack');
+    }
+    return (await res.json()).pack;
+  },
+
+  updatePack: async (id, packData) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/packs/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(packData),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to update pack');
+    }
+    return (await res.json()).pack;
+  },
+
+  deletePack: async (id) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/packs/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to delete pack');
+    }
+    return true;
+  },
+
   // User
   addCoins: async (amount = 1000000) => {
     const token = localStorage.getItem('streamcards_token');
