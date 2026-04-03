@@ -103,6 +103,71 @@ export const api = {
     return true;
   },
 
+  getPackWithCards: async (packId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/packs/${packId}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error('Failed to fetch pack');
+    return await res.json();
+  },
+
+  // Card management (within a booster pack)
+  getPackCards: async (packId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) return [];
+    const res = await fetch(`${API_BASE_URL}/packs/${packId}/cards`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) return [];
+    return (await res.json()).cards || [];
+  },
+
+  createCard: async (packId, cardData) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/packs/${packId}/cards`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(cardData),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to create card');
+    }
+    return (await res.json()).card;
+  },
+
+  updateCard: async (packId, cardId, cardData) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/packs/${packId}/cards/${cardId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(cardData),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to update card');
+    }
+    return (await res.json()).card;
+  },
+
+  deleteCard: async (packId, cardId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/packs/${packId}/cards/${cardId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to delete card');
+    }
+    return true;
+  },
+
   // User
   addCoins: async (amount = 1000000) => {
     const token = localStorage.getItem('streamcards_token');

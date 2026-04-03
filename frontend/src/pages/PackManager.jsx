@@ -3,9 +3,12 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { api } from '../config/api';
 import Booster3D from '../components/Booster3D';
+import CardEditor from './CardEditor';
 import './PackManager.css';
 
 const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'ultra-legendary'];
+
+const DEFAULT_WEIGHTS = { common: 50, uncommon: 30, rare: 15, epic: 4, legendary: 1 };
 
 const DEFAULT_FORM = {
   name: 'My Booster Pack',
@@ -13,8 +16,9 @@ const DEFAULT_FORM = {
   description: '',
   image_url: '',
   price: 100,
-  cards_count: 5,
+  cards_per_open: 5,
   rarity: 'common',
+  rarity_weights: { ...DEFAULT_WEIGHTS },
   color_primary: '#8a8a8a',
   color_accent: '#d0d0d0',
   color_text: '#ffffff',
@@ -29,10 +33,9 @@ function PackManager({ onBack }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(true);
+  const [editingCardsPackId, setEditingCardsPackId] = useState(null);
 
-  useEffect(() => {
-    loadPacks();
-  }, []);
+  useEffect(() => { loadPacks(); }, []);
 
   const loadPacks = async () => {
     setLoading(true);
@@ -48,19 +51,23 @@ function PackManager({ onBack }) {
 
   const handleNewPack = () => {
     setSelectedPackId(null);
-    setForm({ ...DEFAULT_FORM });
+    setForm({ ...DEFAULT_FORM, rarity_weights: { ...DEFAULT_WEIGHTS } });
   };
 
   const handleSelectPack = (pack) => {
     setSelectedPackId(pack.id);
+    const weights = typeof pack.rarity_weights === 'string'
+      ? JSON.parse(pack.rarity_weights)
+      : (pack.rarity_weights || DEFAULT_WEIGHTS);
     setForm({
       name: pack.name || '',
       subtitle: pack.subtitle || '',
       description: pack.description || '',
       image_url: pack.image_url || '',
       price: pack.price || 100,
-      cards_count: pack.cards_count || 5,
+      cards_per_open: pack.cards_per_open || 5,
       rarity: pack.rarity || 'common',
+      rarity_weights: { ...DEFAULT_WEIGHTS, ...weights },
       color_primary: pack.color_primary || '#8a8a8a',
       color_accent: pack.color_accent || '#d0d0d0',
       color_text: pack.color_text || '#ffffff',
@@ -71,6 +78,13 @@ function PackManager({ onBack }) {
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleWeightChange = (rarity, value) => {
+    setForm(prev => ({
+      ...prev,
+      rarity_weights: { ...prev.rarity_weights, [rarity]: parseInt(value) || 0 },
+    }));
   };
 
   const handleSave = async () => {
@@ -95,7 +109,7 @@ function PackManager({ onBack }) {
 
   const handleDelete = async () => {
     if (!selectedPackId) return;
-    if (!confirm('Supprimer ce pack ?')) return;
+    if (!confirm('Supprimer ce pack et toutes ses cartes ?')) return;
     try {
       await api.deletePack(selectedPackId);
       setPacks(prev => prev.filter(p => p.id !== selectedPackId));
@@ -119,6 +133,18 @@ function PackManager({ onBack }) {
     setForm(prev => ({ ...prev, rarity, ...preset }));
   };
 
+  // If editing cards for a pack, show CardEditor
+  if (editingCardsPackId) {
+    const pack = packs.find(p => p.id === editingCardsPackId);
+    return (
+      <CardEditor
+        packId={editingCardsPackId}
+        packName={pack?.name || 'Pack'}
+        onBack={() => setEditingCardsPackId(null)}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="pm-loading">
@@ -127,6 +153,8 @@ function PackManager({ onBack }) {
       </div>
     );
   }
+
+  const weightsTotal = Object.values(form.rarity_weights).reduce((s, v) => s + v, 0);
 
   return (
     <div className="pack-manager">
@@ -158,7 +186,7 @@ function PackManager({ onBack }) {
                   </span>
                 </div>
                 <div className="pm-pack-item-meta">
-                  <span>{pack.price} coins</span>
+                  <span>{pack.total_cards || 0} cartes</span>
                   <span className={`pm-status ${pack.is_published ? 'published' : 'draft'}`}>
                     {pack.is_published ? 'Publié' : 'Brouillon'}
                   </span>
@@ -237,12 +265,12 @@ function PackManager({ onBack }) {
                   <input type="number" value={form.price} onChange={e => handleChange('price', parseInt(e.target.value) || 0)} min={1} />
                 </label>
                 <label>
-                  <span>Nombre de cartes</span>
-                  <input type="number" value={form.cards_count} onChange={e => handleChange('cards_count', parseInt(e.target.value) || 1)} min={1} max={20} />
+                  <span>Cartes par ouverture</span>
+                  <input type="number" value={form.cards_per_open} onChange={e => handleChange('cards_per_open', parseInt(e.target.value) || 1)} min={1} max={10} />
                 </label>
               </div>
               <label>
-                <span>Rareté</span>
+                <span>Rareté du pack</span>
                 <div className="pm-rarity-select">
                   {RARITIES.map(r => (
                     <button
@@ -255,6 +283,29 @@ function PackManager({ onBack }) {
                   ))}
                 </div>
               </label>
+            </div>
+
+            {/* Rarity weights */}
+            <div className="pm-form-section">
+              <h3>Probabilités de tirage <span className="pm-weights-total">({weightsTotal}%)</span></h3>
+              <div className="pm-weights">
+                {RARITIES.map(r => (
+                  <label key={r} className="pm-weight-row">
+                    <span className={`pm-weight-label rarity-${r}`}>{r.replace('-', ' ')}</span>
+                    <input
+                      type="number"
+                      value={form.rarity_weights[r] || 0}
+                      onChange={e => handleWeightChange(r, e.target.value)}
+                      min={0}
+                      max={100}
+                    />
+                    <span className="pm-weight-pct">%</span>
+                  </label>
+                ))}
+              </div>
+              {weightsTotal !== 100 && (
+                <p className="pm-weights-warn">Les probabilités doivent totaliser 100%</p>
+              )}
             </div>
 
             <div className="pm-form-section">
@@ -302,6 +353,11 @@ function PackManager({ onBack }) {
               <button className="pm-save-btn" onClick={handleSave} disabled={saving}>
                 {saving ? 'Enregistrement...' : selectedPackId ? 'Mettre à jour' : 'Créer le pack'}
               </button>
+              {selectedPackId && (
+                <button className="pm-cards-btn" onClick={() => setEditingCardsPackId(selectedPackId)}>
+                  Gérer les cartes
+                </button>
+              )}
               {selectedPackId && (
                 <button className="pm-delete-btn" onClick={handleDelete}>Supprimer</button>
               )}
