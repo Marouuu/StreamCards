@@ -9,6 +9,7 @@ import cardsRoutes from './routes/cards.routes.js';
 import shopRoutes from './routes/shop.routes.js';
 import userRoutes from './routes/user.routes.js';
 import packsRoutes from './routes/packs.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -46,6 +47,7 @@ app.use('/api/cards', cardsRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/packs', packsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Start server
 app.listen(PORT, () => {

@@ -188,13 +188,17 @@ function PackManager({ onBack }) {
                 <div className="pm-pack-item-meta">
                   <span>{pack.total_cards || 0} cartes</span>
                   <span className={`pm-status ${pack.is_published ? 'published' : 'draft'}`}>
-                    {pack.is_published ? 'Publié' : 'Brouillon'}
+                    {pack.is_published ? 'Publie' : 'Brouillon'}
                   </span>
+                </div>
+                <div className={`pm-approval pm-approval-${pack.approval_status || 'pending'}`}>
+                  {pack.approval_status === 'approved' ? 'Approuve' :
+                   pack.approval_status === 'rejected' ? 'Refuse' : 'En attente'}
                 </div>
               </div>
             ))}
             {packs.length === 0 && (
-              <p className="pm-empty">Aucun pack créé. Cliquez sur "+ Nouveau Pack".</p>
+              <p className="pm-empty">Aucun pack cree. Cliquez sur "+ Nouveau Pack".</p>
             )}
           </div>
         </div>

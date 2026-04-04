@@ -197,6 +197,210 @@ export const api = {
     
     return data;
   },
+  // Recycle a single duplicate card
+  recycleCard: async (cardId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/cards/recycle/${cardId}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to recycle card');
+    }
+    const data = await res.json();
+    if (data.newToken) localStorage.setItem('streamcards_token', data.newToken);
+    return data;
+  },
+
+  // Request streamer status
+  requestStreamer: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/user/request-streamer`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to request streamer status');
+    }
+    return await res.json();
+  },
+
+  // Get streamer status
+  getStreamerStatus: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/user/streamer-status`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  },
+
+  // Admin: get pending streamer requests
+  getStreamerRequests: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/streamer-requests`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to fetch requests');
+    }
+    return await res.json();
+  },
+
+  // Admin: get all users
+  getAdminUsers: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/users`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to fetch users');
+    }
+    return await res.json();
+  },
+
+  // Admin: approve streamer
+  approveStreamer: async (twitchId, note) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/approve-streamer/${twitchId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ note }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to approve streamer');
+    }
+    return await res.json();
+  },
+
+  // Admin: reject streamer
+  rejectStreamer: async (twitchId, note) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/reject-streamer/${twitchId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ note }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to reject streamer');
+    }
+    return await res.json();
+  },
+
+  // Admin: get pending packs
+  getPendingPacks: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/pending-packs`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Admin: approve pack
+  approvePack: async (packId, note) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/approve-pack/${packId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ note }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Admin: reject pack
+  rejectPack: async (packId, note) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/reject-pack/${packId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ note }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Admin: get pending cards
+  getPendingCards: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/pending-cards`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Admin: approve card
+  approveCard: async (cardId, note) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/approve-card/${cardId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ note }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Admin: reject card
+  rejectCard: async (cardId, note) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/reject-card/${cardId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ note }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Admin: get stats
+  getAdminStats: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/admin/stats`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  },
+
+  // Recycle all duplicates at once
+  recycleAll: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/cards/recycle-all`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to recycle cards');
+    }
+    const data = await res.json();
+    if (data.newToken) localStorage.setItem('streamcards_token', data.newToken);
+    return data;
+  },
 };
 
 export default api;

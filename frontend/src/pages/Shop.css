@@ -88,6 +88,92 @@
   font-weight: 700;
 }
 
+/* ── Streamer Filter Bar ── */
+.shop-filters {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.streamer-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.streamer-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.streamer-filter-btn.active {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.5);
+  color: white;
+}
+
+.filter-streamer-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ── Streamer tag on booster card ── */
+.booster-streamer-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  width: fit-content;
+}
+
+.booster-streamer-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.booster-twitch-icon {
+  width: 12px;
+  height: 12px;
+  color: #9146ff;
+  flex-shrink: 0;
+}
+
+/* ── 3D Booster Preview ── */
+.booster-3d-preview {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  cursor: grab;
+}
+
+.booster-3d-preview:active {
+  cursor: grabbing;
+}
+
 .shop-message {
   padding: 1rem 1.5rem;
   border-radius: 10px;
@@ -390,33 +476,7 @@
   );
 }
 
-.booster-image {
-  width: 100%;
-  aspect-ratio: 1;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.booster-icon {
-  font-size: 5rem;
-  opacity: 0.8;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
+/* .booster-image and .booster-icon removed — replaced by .booster-3d-preview */
 
 .booster-info {
   flex: 1;

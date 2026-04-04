@@ -35,7 +35,7 @@ async function drawCards(boosterId, rarityWeights, count) {
   let cardsByRarity = {};
   try {
     const result = await pool.query(
-      'SELECT id, rarity FROM card_templates WHERE booster_pack_id = $1 AND is_active = true',
+      `SELECT id, rarity FROM card_templates WHERE booster_pack_id = $1 AND is_active = true AND approval_status = 'approved'`,
       [boosterId]
     );
     for (const row of result.rows) {
@@ -108,9 +108,13 @@ router.get('/boosters', authenticate, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT bp.*,
+        u.username AS creator_name,
+        u.display_name AS creator_display_name,
+        u.profile_image_url AS creator_image,
         (SELECT COUNT(*) FROM card_templates ct WHERE ct.booster_pack_id = bp.id AND ct.is_active = true) AS total_cards
        FROM booster_packs bp
-       WHERE bp.is_published = true
+       JOIN users u ON bp.creator_id = u.twitch_id
+       WHERE bp.is_published = true AND bp.approval_status = 'approved'
        ORDER BY bp.price ASC`
     );
     const packs = result.rows.length > 0 ? result.rows : FALLBACK_PACKS;
@@ -206,20 +210,35 @@ router.post('/boosters/:boosterId/purchase', authenticate, async (req, res) => {
     );
 
     // Enrich drawn cards with full info if possible
-    let enrichedCards = drawnCards.map(c => ({ id: c.cardId, rarity: c.rarity, isMock: c.isMock }));
+    let enrichedCards = drawnCards.map(c => ({ id: c.cardId, rarity: c.rarity, isMock: c.isMock, isNew: true }));
     try {
       const realIds = drawnCards.filter(c => !c.isMock).map(c => c.cardId);
       if (realIds.length > 0) {
+        // Get card details
         const cardDetails = await pool.query(
-          'SELECT * FROM card_templates WHERE id = ANY($1)',
+          `SELECT ct.*, u.username AS creator_name, u.display_name AS creator_display_name
+           FROM card_templates ct
+           JOIN users u ON ct.creator_id = u.twitch_id
+           WHERE ct.id = ANY($1)`,
           [realIds]
         );
         const detailMap = new Map(cardDetails.rows.map(r => [r.id, r]));
+
+        // Check which cards the user already had before this opening
+        let existingTemplateIds = new Set();
+        if (openingId) {
+          const existing = await pool.query(
+            'SELECT DISTINCT card_template_id FROM user_cards WHERE user_id = $1 AND booster_opening_id != $2',
+            [twitchId, openingId]
+          );
+          existingTemplateIds = new Set(existing.rows.map(r => r.card_template_id));
+        }
+
         enrichedCards = drawnCards.map(c => {
           if (!c.isMock && detailMap.has(c.cardId)) {
-            return { ...detailMap.get(c.cardId), isMock: false };
+            return { ...detailMap.get(c.cardId), isMock: false, isNew: !existingTemplateIds.has(c.cardId) };
           }
-          return { id: c.cardId, rarity: c.rarity, isMock: c.isMock };
+          return { id: c.cardId, rarity: c.rarity, isMock: c.isMock, isNew: true };
         });
       }
     } catch { /* ignore */ }

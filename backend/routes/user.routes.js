@@ -99,20 +99,60 @@ router.post('/add-coins', authenticate, async (req, res) => {
   }
 });
 
-// Toggle streamer mode
-router.post('/toggle-streamer', authenticate, async (req, res) => {
+// Request streamer status (requires admin approval)
+router.post('/request-streamer', authenticate, async (req, res) => {
+  try {
+    const twitchId = req.user.twitchId;
+
+    // Check current status
+    const current = await pool.query(
+      'SELECT streamer_status FROM users WHERE twitch_id = $1',
+      [twitchId]
+    );
+
+    if (current.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const status = current.rows[0].streamer_status;
+
+    if (status === 'approved') {
+      return res.status(400).json({ error: 'You are already an approved streamer' });
+    }
+    if (status === 'pending') {
+      return res.status(400).json({ error: 'Your request is already pending' });
+    }
+
+    const result = await pool.query(
+      `UPDATE users
+       SET streamer_status = 'pending',
+           streamer_requested_at = NOW()
+       WHERE twitch_id = $1
+       RETURNING streamer_status`,
+      [twitchId]
+    );
+
+    res.json({ success: true, streamerStatus: result.rows[0].streamer_status });
+  } catch (error) {
+    console.error('Error requesting streamer:', error);
+    res.status(500).json({ error: 'Failed to submit streamer request' });
+  }
+});
+
+// Get own streamer status
+router.get('/streamer-status', authenticate, async (req, res) => {
   try {
     const result = await pool.query(
-      `UPDATE users SET is_streamer = NOT is_streamer WHERE twitch_id = $1 RETURNING is_streamer`,
+      'SELECT streamer_status, streamer_reviewed_at, streamer_review_note FROM users WHERE twitch_id = $1',
       [req.user.twitchId]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json({ isStreamer: result.rows[0].is_streamer });
+    res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error toggling streamer:', error);
-    res.status(500).json({ error: 'Failed to toggle streamer mode' });
+    console.error('Error fetching streamer status:', error);
+    res.status(500).json({ error: 'Failed to fetch status' });
   }
 });
 

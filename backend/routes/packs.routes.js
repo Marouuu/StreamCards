@@ -117,12 +117,17 @@ router.put('/:id', authenticate, async (req, res) => {
     const errors = validatePack(merged);
     if (errors.length > 0) return res.status(400).json({ error: errors.join(', ') });
 
+    // If pack content changed significantly, reset approval to pending
+    const needsReapproval = data.name || data.image_url !== undefined || data.description !== undefined;
+    const newApprovalStatus = needsReapproval && existing.rows[0].approval_status === 'approved'
+      ? 'pending' : existing.rows[0].approval_status;
+
     const result = await pool.query(
       `UPDATE booster_packs SET
         name = $1, subtitle = $2, description = $3, image_url = $4,
         price = $5, cards_per_open = $6, rarity = $7, rarity_weights = $8,
         color_primary = $9, color_accent = $10, color_text = $11, color_background = $12,
-        is_published = $13
+        is_published = $13, approval_status = $15
        WHERE id = $14
        RETURNING *`,
       [
@@ -140,6 +145,7 @@ router.put('/:id', authenticate, async (req, res) => {
         data.color_background || existing.rows[0].color_background,
         data.is_published !== undefined ? data.is_published : existing.rows[0].is_published,
         req.params.id,
+        newApprovalStatus,
       ]
     );
 

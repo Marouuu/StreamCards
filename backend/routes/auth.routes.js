@@ -105,17 +105,21 @@ router.get('/me', async (req, res) => {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    // Try to get fresh coins from DB
+    // Try to get fresh data from DB
     let coins = decoded.coins || 0;
     let isStreamer = false;
+    let isAdmin = false;
+    let streamerStatus = 'none';
     try {
       const result = await pool.query(
-        'SELECT coins, is_streamer FROM users WHERE twitch_id = $1',
+        'SELECT coins, is_streamer, is_admin, streamer_status FROM users WHERE twitch_id = $1',
         [decoded.twitchId]
       );
       if (result.rows.length > 0) {
         coins = result.rows[0].coins;
         isStreamer = result.rows[0].is_streamer;
+        isAdmin = result.rows[0].is_admin;
+        streamerStatus = result.rows[0].streamer_status || 'none';
       }
     } catch {
       // DB unavailable, fall back to JWT coins
@@ -129,6 +133,8 @@ router.get('/me', async (req, res) => {
       profileImageUrl: decoded.profileImageUrl,
       coins,
       isStreamer,
+      isAdmin,
+      streamerStatus,
     });
   } catch (error) {
     console.error('Error in /me endpoint:', error);

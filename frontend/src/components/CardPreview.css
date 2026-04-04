@@ -39,6 +39,61 @@
     0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
+/* Streamer tag — top-left corner */
+.card-preview__streamer {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.55em;
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: calc(100% - 8px);
+  overflow: hidden;
+}
+
+.card-preview__streamer span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-preview__twitch-icon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  color: #9146ff;
+}
+
+.card-preview--small .card-preview__streamer {
+  font-size: 0.45em;
+  padding: 1px 4px;
+  gap: 2px;
+}
+
+.card-preview--small .card-preview__twitch-icon {
+  width: 8px;
+  height: 8px;
+}
+
+.card-preview--large .card-preview__streamer {
+  font-size: 0.7em;
+  padding: 3px 8px;
+  gap: 4px;
+}
+
+.card-preview--large .card-preview__twitch-icon {
+  width: 14px;
+  height: 14px;
+}
+
 /* Inner content */
 .card-preview__inner {
   position: relative;

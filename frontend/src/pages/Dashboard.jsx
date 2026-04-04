@@ -3,15 +3,14 @@ import { api } from '../config/api';
 import { getToken } from '../utils/auth';
 import './Dashboard.css';
 
-function Dashboard() {
-  const [user, setUser] = useState(null);
+function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
+  const [user, setUser] = useState(initialUser);
   const [followedChannels, setFollowedChannels] = useState([]);
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [channelSort, setChannelSort] = useState('watched'); // 'watched', 'viewers', or 'name'
+  const [channelSort, setChannelSort] = useState('watched');
   const [addingCoins, setAddingCoins] = useState(false);
-  
-  // Filtres pour la collection
+
   const [filters, setFilters] = useState({
     rarity: 'all',
     boosterType: 'all',
@@ -19,16 +18,11 @@ function Dashboard() {
   });
 
   useEffect(() => {
-    console.log('Dashboard: useEffect triggered');
     const loadData = async () => {
-      console.log('Dashboard: Loading data...');
       const userData = await api.getCurrentUser();
-      console.log('Dashboard: User data:', userData);
-      
       if (userData) {
         setUser(userData);
         setLoading(false);
-        // Load additional data with userData
         const token = getToken();
         
         // Fetch followed channels
@@ -91,16 +85,16 @@ function Dashboard() {
   // Trier les chaînes selon le filtre sélectionné
   const handleAddCoins = async () => {
     if (addingCoins) return;
-    
+
     setAddingCoins(true);
     try {
       const result = await api.addCoins(1000000);
-      // Refresh user data
       const userData = await api.getCurrentUser();
       if (userData) {
         setUser(userData);
+        if (onUserUpdate) onUserUpdate(userData);
       }
-      alert(`✅ ${result.addedCoins.toLocaleString()} coins ajoutés ! Total: ${result.newCoins.toLocaleString()}`);
+      alert(`${result.addedCoins.toLocaleString()} coins ajoutes ! Total: ${result.newCoins.toLocaleString()}`);
     } catch (error) {
       console.error('Error adding coins:', error);
       alert('Erreur lors de l\'ajout de coins');
@@ -159,14 +153,68 @@ function Dashboard() {
               <span className="stat-value">{uniqueStreamers.length}</span>
             </div>
           </div>
-          <button 
+          <button
             className="add-coins-btn"
             onClick={handleAddCoins}
             disabled={addingCoins}
           >
-            {addingCoins ? 'Ajout...' : '💰 +1M Coins'}
+            {addingCoins ? 'Ajout...' : '+1M Coins (Dev)'}
           </button>
         </div>
+
+        {/* Streamer status banner */}
+        {user && !user.isStreamer && (
+          <div className={`streamer-status-banner ${user.streamerStatus || 'none'}`}>
+            {user.streamerStatus === 'pending' ? (
+              <div className="status-info">
+                <span className="status-icon">&#9203;</span>
+                <div>
+                  <strong>Demande en cours</strong>
+                  <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.7 }}>
+                    Votre demande de streamer est en attente de validation
+                  </p>
+                </div>
+              </div>
+            ) : user.streamerStatus === 'rejected' ? (
+              <>
+                <div className="status-info">
+                  <span className="status-icon">&#10060;</span>
+                  <div>
+                    <strong>Demande refusee</strong>
+                    <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.7 }}>
+                      Votre demande de streamer a ete refusee
+                    </p>
+                  </div>
+                </div>
+                <button className="request-streamer-btn" onClick={onStreamerRequest}>
+                  Re-demander
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="status-info">
+                  <span className="status-icon">&#127909;</span>
+                  <span>Vous etes un streamer ? Creez vos propres boosters et cartes !</span>
+                </div>
+                <button className="request-streamer-btn" onClick={onStreamerRequest}>
+                  Devenir Streamer
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {user && user.isStreamer && (
+          <div className="streamer-status-banner" style={{
+            background: 'rgba(34, 197, 94, 0.1)',
+            border: '1px solid rgba(34, 197, 94, 0.3)',
+          }}>
+            <div className="status-info">
+              <span className="status-icon">&#9989;</span>
+              <span><strong>Streamer verifie</strong> — Vous pouvez creer des boosters et des cartes</span>
+            </div>
+          </div>
+        )}
 
         {/* Chaînes suivies */}
         <div className="followed-channels-card">
