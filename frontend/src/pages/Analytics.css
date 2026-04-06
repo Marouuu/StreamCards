@@ -181,3 +181,55 @@
 .activity-time {
   font-size: 0.65rem; color: rgba(255,255,255,0.25);
 }
+
+/* Responsive */
+@media (max-width: 700px) {
+  .analytics-page {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .analytics-stats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.6rem;
+  }
+
+  .analytics-stat {
+    padding: 0.8rem;
+  }
+
+  .analytics-stat-value {
+    font-size: 1.3rem;
+  }
+
+  .analytics-loading {
+    grid-template-columns: 1fr;
+  }
+
+  .rarity-bar-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+
+  .rarity-bar-label {
+    width: auto;
+    text-align: left;
+  }
+
+  .rarity-bar-count {
+    width: auto;
+    align-self: flex-end;
+  }
+
+  .completion-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

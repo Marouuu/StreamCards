@@ -510,3 +510,67 @@
     gap: 1rem;
   }
 }
+
+@media (max-width: 600px) {
+  .collection-page {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .collection-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .collection-stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+
+  .stat-card {
+    padding: 0.8rem;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .collection-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .recycle-bar {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.6rem;
+    padding: 0.8rem;
+  }
+
+  .collection-search {
+    min-width: 100%;
+  }
+
+  .group-buttons {
+    width: 100%;
+  }
+
+  .group-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .collection-skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
+}
+
+@media (max-width: 400px) {
+  .collection-stats-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .collection-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+}

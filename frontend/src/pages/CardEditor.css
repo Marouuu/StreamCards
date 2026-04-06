@@ -393,3 +393,57 @@
     position: static;
   }
 }
+
+@media (max-width: 600px) {
+  .card-editor {
+    padding: 1rem;
+  }
+
+  .ce-header {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .ce-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .ce-header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .ce-colors {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .ce-actions {
+    flex-direction: column;
+  }
+
+  .ce-actions button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .ce-rarity-select {
+    gap: 0.3rem;
+  }
+
+  .ce-rarity-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+  }
+
+  .ce-effects {
+    gap: 0.3rem;
+  }
+
+  .ce-effect-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}

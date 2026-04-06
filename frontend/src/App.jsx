@@ -154,6 +154,16 @@ function AppInner() {
                 </button>
                 {moreMenuOpen && (
                   <div className="nav-more-dropdown">
+                    <button className={`nav-more-mobile-only${currentPage === 'marketplace' ? ' nav-more-active' : ''}`} onClick={() => { setCurrentPage('marketplace'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#128176;</span> Marche
+                    </button>
+                    <button className={`nav-more-mobile-only${currentPage === 'trades' ? ' nav-more-active' : ''}`} onClick={() => { setCurrentPage('trades'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#128260;</span> Echanges
+                    </button>
+                    <button className={`nav-more-mobile-only${currentPage === 'auctions' ? ' nav-more-active' : ''}`} onClick={() => { setCurrentPage('auctions'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#128296;</span> Encheres
+                    </button>
+                    <div className="nav-more-divider nav-more-mobile-only" />
                     {user.isStreamer && (
                       <button className={currentPage === 'pack-manager' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('pack-manager'); setMoreMenuOpen(false); }}>
                         <span className="nav-more-icon">&#128230;</span> Mes Packs

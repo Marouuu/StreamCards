@@ -500,3 +500,63 @@
     max-height: 400px;
   }
 }
+
+@media (max-width: 600px) {
+  .pack-manager {
+    padding: 1rem;
+  }
+
+  .pm-header {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .pm-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .pm-new-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pm-editor {
+    gap: 1rem;
+  }
+
+  .pm-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .pm-colors {
+    grid-template-columns: 1fr;
+  }
+
+  .pm-actions {
+    flex-direction: column;
+  }
+
+  .pm-actions button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pm-rarity-select {
+    gap: 0.3rem;
+  }
+
+  .pm-rarity-btn {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .pm-preview {
+    max-height: 300px;
+  }
+
+  .pm-pack-item-name {
+    max-width: 120px;
+  }
+}

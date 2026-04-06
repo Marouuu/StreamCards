@@ -486,3 +486,77 @@
     display: none;
   }
 }
+
+@media (max-width: 600px) {
+  .admin-panel {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .admin-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .admin-stats-bar {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .admin-stat {
+    padding: 0.7rem 0.5rem;
+  }
+
+  .admin-stat-number {
+    font-size: 1.3rem;
+  }
+
+  .admin-stat-label {
+    font-size: 0.65rem;
+  }
+
+  .admin-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-tabs::-webkit-scrollbar { display: none; }
+
+  .admin-tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .request-user-info {
+    gap: 0.6rem;
+  }
+
+  .request-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .request-details h3 {
+    font-size: 0.95rem;
+  }
+
+  .pending-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Hide less important table columns */
+  .users-table th:nth-child(3),
+  .users-table td:nth-child(3),
+  .users-table th:nth-child(5),
+  .users-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .admin-stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

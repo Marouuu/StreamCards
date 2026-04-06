@@ -596,3 +596,96 @@
   }
 }
 
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .user-profile-card {
+    padding: 1.2rem;
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .user-profile-card h2 {
+    font-size: 1.2rem;
+  }
+
+  .user-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .dash-shop-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+
+  .dash-search {
+    min-width: 100%;
+  }
+
+  .dash-streamer-group {
+    padding: 1rem 1.2rem;
+  }
+
+  .dash-boosters-row {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .dash-booster-3d {
+    width: 140px;
+    height: 190px;
+  }
+
+  .dash-booster-name {
+    font-size: 0.95rem;
+  }
+
+  .followed-channels-card {
+    padding: 1rem;
+  }
+
+  .channels-list {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard {
+    padding: 0.8rem;
+  }
+
+  .dash-boosters-row {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .dash-booster-3d {
+    width: 120px;
+    height: 160px;
+  }
+
+  .dash-booster-card {
+    padding: 1rem 0.8rem;
+  }
+
+  .skeleton-boosters {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+

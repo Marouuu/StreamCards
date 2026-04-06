@@ -547,3 +547,88 @@
   text-align: center;
   letter-spacing: 0.5px;
 }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .booster-opening-container {
+    width: 100%;
+    height: 95vh;
+  }
+
+  .opening-title {
+    font-size: 1.3rem;
+  }
+
+  .open-booster-btn {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+  }
+
+  .cards-flying-container {
+    gap: 0.3rem;
+    min-height: 150px;
+    padding: 0.5rem;
+  }
+
+  .opened-cards-recap {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
+
+  .opened-cards-recap h3 {
+    font-size: 1.2rem;
+  }
+
+  .cards-reveal-grid {
+    gap: 0.8rem;
+  }
+
+  .recap-card-3d-container {
+    width: 110px;
+    height: 154px;
+  }
+
+  .recap-card-name {
+    font-size: 0.7rem;
+    max-width: 110px;
+  }
+
+  .recap-close-btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .card-reveal-ui {
+    padding-bottom: 3.5rem;
+  }
+
+  .reveal-card-name {
+    font-size: 1rem;
+  }
+
+  .reveal-rarity-tag {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+  }
+
+  .card-reveal-fullscreen .reveal-hint {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .recap-card-3d-container {
+    width: 90px;
+    height: 126px;
+  }
+
+  .recap-card-name {
+    max-width: 90px;
+    font-size: 0.65rem;
+  }
+
+  .recap-pill {
+    padding: 3px 8px;
+    font-size: 0.6rem;
+  }
+}

@@ -400,3 +400,77 @@
     flex-wrap: wrap;
   }
 }
+
+@media (max-width: 480px) {
+  .leaderboard-page {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .lb-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .lb-my-rank {
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  .lb-categories {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .lb-cat-btn {
+    padding: 0.7rem 0.3rem;
+  }
+
+  .lb-cat-icon {
+    font-size: 1.2rem;
+  }
+
+  .lb-cat-label {
+    font-size: 0.75rem;
+  }
+
+  .lb-cat-desc {
+    display: none;
+  }
+
+  .lb-podium {
+    gap: 0.3rem;
+    flex-wrap: nowrap;
+  }
+
+  .lb-podium-item {
+    padding: 0.8rem 0.5rem;
+  }
+
+  .lb-podium-item.podium-1 { min-width: 100px; }
+  .lb-podium-item.podium-2,
+  .lb-podium-item.podium-3 { min-width: 85px; }
+
+  .podium-1 .lb-podium-avatar { width: 52px; height: 52px; }
+  .lb-podium-avatar { width: 40px; height: 40px; }
+
+  .lb-podium-name { font-size: 0.75rem; max-width: 80px; }
+  .podium-1 .lb-podium-name { font-size: 0.85rem; }
+
+  .lb-podium-score { font-size: 1rem; }
+  .podium-1 .lb-podium-score { font-size: 1.2rem; }
+
+  .lb-row {
+    padding: 0.5rem 0.6rem;
+    gap: 0.4rem;
+  }
+
+  .lb-player-name {
+    font-size: 0.8rem;
+  }
+
+  .lb-avatar {
+    width: 28px;
+    height: 28px;
+  }
+}

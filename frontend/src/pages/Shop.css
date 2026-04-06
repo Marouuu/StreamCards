@@ -623,14 +623,77 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .shop {
+    padding: 1rem;
+  }
+
   .shop-header {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 1rem;
-    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .shop-header h1 {
+    font-size: 2rem;
+    text-align: left;
+  }
+
+  .shop-filters {
+    gap: 0.4rem;
+  }
+
+  .boosters-grid > * {
+    flex: 0 0 260px;
+    min-width: 260px;
+  }
+
+  .carousel-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+  }
+
+  .booster-card {
+    padding: 1rem;
+  }
+
+  .booster-header h3 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .shop {
+    padding: 0.8rem;
+  }
+
+  .shop-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .boosters-grid > * {
+    flex: 0 0 220px;
+    min-width: 220px;
   }
 
   .boosters-grid {
-    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .carousel-arrow {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+
+  .shop-skeleton-card {
+    flex: 0 0 220px;
+  }
+
+  .streamer-filter-btn {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
   }
 }
 

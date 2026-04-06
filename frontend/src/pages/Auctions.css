@@ -531,3 +531,73 @@
   .create-auction-fields { width: 100%; }
   .auctions-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
 }
+
+@media (max-width: 520px) {
+  .auctions-page {
+    padding: 1rem;
+  }
+
+  .auctions-header {
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .auctions-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .auctions-tabs {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .auctions-tabs button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .auctions-create-btn {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .auctions-filters {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .auctions-search {
+    min-width: 100%;
+  }
+
+  .auctions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .auction-modal {
+    padding: 1.2rem;
+    border-radius: 14px;
+  }
+
+  .auction-modal-overlay {
+    padding: 0.8rem;
+  }
+
+  .auction-detail-prices {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .auction-detail-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .auction-bid-row {
+    flex-direction: column;
+  }
+}
