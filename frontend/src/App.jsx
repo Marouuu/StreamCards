@@ -15,6 +15,7 @@ import Profile from './pages/Profile'
 import PackHistory from './pages/PackHistory'
 import Achievements from './pages/Achievements'
 import Analytics from './pages/Analytics'
+import Auctions from './pages/Auctions'
 import NotificationBell from './components/NotificationBell'
 import { api } from './config/api'
 import { getToken, setToken, removeToken } from './utils/auth'
@@ -128,11 +129,11 @@ function AppInner() {
                 />
               )}
               <span className="user-welcome">{user.displayName || user.username}</span>
+              <NotificationBell />
               <button className="coins-btn">
                 <span className="coin-icon">&#128176;</span> {(user.coins || 0).toLocaleString()}
               </button>
-              <NotificationBell />
-              <button className={`shop-btn${currentPage === 'shop' ? ' nav-active' : ''}`} onClick={() => setCurrentPage('shop')}>
+              <button className={`shop-btn casino-btn${currentPage === 'shop' ? ' nav-active' : ''}`} onClick={() => setCurrentPage('shop')}>
                 SHOP
               </button>
               <button className={`collection-btn${currentPage === 'collection' ? ' nav-active' : ''}`} onClick={() => setCurrentPage('collection')}>
@@ -143,6 +144,9 @@ function AppInner() {
               </button>
               <button className={`trades-btn${currentPage === 'trades' ? ' nav-active' : ''}`} onClick={() => setCurrentPage('trades')}>
                 ECHANGES
+              </button>
+              <button className={`auction-nav-btn${currentPage === 'auctions' ? ' nav-active' : ''}`} onClick={() => setCurrentPage('auctions')}>
+                ENCHERES
               </button>
               <div className="nav-more-wrapper" ref={moreRef}>
                 <button className={`nav-more-btn${moreMenuOpen ? ' nav-more-open' : ''}`} onClick={() => setMoreMenuOpen(!moreMenuOpen)}>
@@ -217,6 +221,8 @@ function AppInner() {
             <PackHistory onBack={() => setCurrentPage('dashboard')} />
           ) : currentPage === 'achievements' ? (
             <Achievements onBack={() => setCurrentPage('dashboard')} />
+          ) : currentPage === 'auctions' ? (
+            <Auctions onBack={() => setCurrentPage('dashboard')} onUserUpdate={setUser} currentUserId={user.twitchId} />
           ) : currentPage === 'analytics' && user.isStreamer ? (
             <Analytics onBack={() => setCurrentPage('dashboard')} />
           ) : currentPage === 'admin' && user.isAdmin ? (

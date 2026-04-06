@@ -20,6 +20,7 @@ import collectionProgressRoutes from './routes/collection-progress.routes.js';
 import historyRoutes from './routes/history.routes.js';
 import achievementsRoutes from './routes/achievements.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
+import auctionsRoutes from './routes/auctions.routes.js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -71,6 +72,7 @@ app.use('/api/collection-progress', collectionProgressRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/achievements', achievementsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/auctions', auctionsRoutes);
 
 // Start server
 app.listen(PORT, () => {

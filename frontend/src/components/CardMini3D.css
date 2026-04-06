@@ -1,0 +1,157 @@
+/* ============================================
+   Card Mini 3D — 3D card preview wrapper
+   ============================================ */
+
+.card-mini-3d {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  user-select: none;
+}
+
+.card-mini-3d:hover {
+  transform: translateY(-6px);
+  border-color: var(--glow-color, rgba(255, 255, 255, 0.2));
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--glow-color) 40%, transparent),
+    0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.card-mini-3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none;
+}
+
+/* Overlay info */
+.card-mini-3d__info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5em 0.6em;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.card-mini-3d:hover .card-mini-3d__info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Always show info on large size */
+.card-mini-3d--large .card-mini-3d__info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card-mini-3d__name {
+  color: #ffffff;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-mini-3d--large .card-mini-3d__name { font-size: 0.9em; }
+.card-mini-3d--small .card-mini-3d__name { font-size: 0.65em; }
+
+.card-mini-3d__creator {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.6em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-mini-3d__rarity {
+  font-size: 0.55em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Rarity text colors */
+.rarity-text--common { color: #b0b0b0; }
+.rarity-text--uncommon { color: #2ecc40; }
+.rarity-text--rare { color: #60a5fa; }
+.rarity-text--epic { color: #c084fc; }
+.rarity-text--legendary { color: #ffd700; }
+.rarity-text--ultra-legendary {
+  background: linear-gradient(90deg, #ff0040, #ff00ff, #4000ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Stack badge */
+.card-mini-3d__stack {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  font-size: 0.65em;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+}
+
+/* Rarity animated borders */
+.card-mini-3d.rarity-legendary {
+  animation: card3d-legendary-pulse 2.5s ease-in-out infinite;
+}
+
+.card-mini-3d.rarity-epic {
+  animation: card3d-epic-glow 4s ease-in-out infinite;
+}
+
+.card-mini-3d.rarity-ultra-legendary {
+  border-image: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #9400d3, #ff0000) 1;
+  animation: card3d-ultra-hue 3s linear infinite;
+}
+
+@keyframes card3d-legendary-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2), 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.15), 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes card3d-epic-glow {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(150, 0, 255, 0.2), 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(150, 0, 255, 0.35), 0 0 30px rgba(150, 0, 255, 0.1), 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes card3d-ultra-hue {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .card-mini-3d--medium { width: 140px !important; height: 196px !important; }
+  .card-mini-3d--large { width: 200px !important; height: 280px !important; }
+}

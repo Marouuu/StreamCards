@@ -1,4 +1,7 @@
-import CardPreview from './CardPreview';
+import { Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import Card3D from './Card3D';
 import './CardDetailModal.css';
 
 const RARITY_LABELS = {
@@ -25,9 +28,32 @@ function CardDetailModal({ card, onClose }) {
         <button className="card-detail-close" onClick={onClose}>&times;</button>
 
         <div className="card-detail-content">
-          {/* Large card preview */}
-          <div className="card-detail-preview">
-            <CardPreview card={card} size="large" />
+          {/* 3D Card preview — interactive, can rotate */}
+          <div className="card-detail-preview card-detail-3d">
+            <Canvas
+              camera={{ position: [0, 0, 4], fov: 45 }}
+              gl={{ antialias: true, alpha: true }}
+              style={{ background: 'transparent' }}
+            >
+              <ambientLight intensity={0.6} />
+              <directionalLight position={[3, 3, 5]} intensity={1.2} />
+              <directionalLight position={[-2, -1, 3]} intensity={0.4} />
+              <Suspense fallback={null}>
+                <Card3D
+                  card={card}
+                  floatAnimation={true}
+                  autoRotate={false}
+                  scale={1}
+                />
+              </Suspense>
+              <OrbitControls
+                enableZoom={false}
+                enablePan={false}
+                minPolarAngle={Math.PI / 4}
+                maxPolarAngle={Math.PI * 3 / 4}
+              />
+            </Canvas>
+            <span className="card-detail-3d-hint">Glissez pour tourner la carte</span>
           </div>
 
           {/* Card info */}
