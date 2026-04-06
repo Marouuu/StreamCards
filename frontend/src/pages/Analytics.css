@@ -13,13 +13,23 @@
 }
 .analytics-header h2 { color: white; margin: 0; }
 .analytics-back {
-  width: 40px; height: 40px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white; font-size: 1.2rem;
-  cursor: pointer; display: flex;
-  align-items: center; justify-content: center;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+}
+.analytics-back:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 /* Loading */

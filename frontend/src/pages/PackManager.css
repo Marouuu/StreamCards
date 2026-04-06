@@ -25,17 +25,21 @@
 }
 
 .pm-back-btn {
-  padding: 0.5rem 1rem;
-  background: transparent;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   color: white;
-  border: none;
   font-size: 1.2rem;
   cursor: pointer;
-  opacity: 0.8;
   transition: all 0.2s;
   outline: none;
 }
-.pm-back-btn:hover { opacity: 1; transform: translateX(-3px); }
+.pm-back-btn:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-1px); }
 
 .pm-header h1 {
   font-size: 2rem;

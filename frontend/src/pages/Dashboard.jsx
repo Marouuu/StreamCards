@@ -7,10 +7,8 @@ import './Dashboard.css';
 
 function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavigate }) {
   const [user, setUser] = useState(initialUser);
-  const [followedChannels, setFollowedChannels] = useState([]);
   const [boosters, setBoosters] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [channelSort, setChannelSort] = useState('watched');
   const [addingCoins, setAddingCoins] = useState(false);
   const [streamerSearch, setStreamerSearch] = useState('');
   const toast = useToast();
@@ -22,19 +20,6 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
         setUser(userData);
         setLoading(false);
         const token = getToken();
-
-        // Fetch followed channels
-        try {
-          const channelsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/user/followed`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-          });
-          if (channelsResponse.ok) {
-            const channelsData = await channelsResponse.json();
-            setFollowedChannels(channelsData.channels || []);
-          }
-        } catch (error) {
-          console.error('Error fetching followed channels:', error);
-        }
 
         // Fetch boosters from shop
         try {
@@ -98,16 +83,6 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
     }
   };
 
-  const sortedChannels = [...followedChannels].sort((a, b) => {
-    if (channelSort === 'watched') {
-      return new Date(b.followed_at || 0) - new Date(a.followed_at || 0);
-    } else if (channelSort === 'viewers') {
-      return (b.viewer_count || 0) - (a.viewer_count || 0);
-    } else {
-      return (a.display_name || '').localeCompare(b.display_name || '');
-    }
-  });
-
   if (loading) {
     return (
       <div className="dashboard">
@@ -147,13 +122,18 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
       <div className="dashboard-left">
         {/* Profil utilisateur */}
         <div className="user-profile-card">
-          {user?.profileImageUrl && (
-            <img
-              src={user.profileImageUrl}
-              alt={user.displayName || user.username}
-              className="profile-avatar"
-            />
-          )}
+          <div className="profile-avatar-wrapper">
+            {user?.profileImageUrl && (
+              <img
+                src={user.profileImageUrl}
+                alt={user.displayName || user.username}
+                className="profile-avatar"
+              />
+            )}
+            {user?.isStreamer && (
+              <span className="verified-badge" title="Streamer verifie">&#10003;</span>
+            )}
+          </div>
           <h2>{user?.displayName || user?.username}</h2>
           <div className="user-stats">
             <div className="stat-item">
@@ -214,60 +194,6 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
           </div>
         )}
 
-        {user && user.isStreamer && (
-          <div className="streamer-status-banner" style={{
-            background: 'rgba(34, 197, 94, 0.1)',
-            border: '1px solid rgba(34, 197, 94, 0.3)',
-          }}>
-            <div className="status-info">
-              <span className="status-icon">&#9989;</span>
-              <span><strong>Streamer verifie</strong> — Vous pouvez creer des boosters et des cartes</span>
-            </div>
-          </div>
-        )}
-
-        {/* Chaînes suivies */}
-        <div className="followed-channels-card">
-          <div className="channels-header">
-            <h3>Chaines suivies</h3>
-            <select
-              value={channelSort}
-              onChange={(e) => setChannelSort(e.target.value)}
-              className="channel-sort-select"
-            >
-              <option value="watched">Plus regardees</option>
-              <option value="viewers">Plus populaires</option>
-              <option value="name">Par nom</option>
-            </select>
-          </div>
-          <div className="channels-list">
-            {sortedChannels.length > 0 ? (
-              sortedChannels.slice(0, 10).map((channel) => (
-                <div key={channel.id} className={`channel-item ${channel.is_live ? 'live' : ''}`}>
-                  <img
-                    src={channel.profile_image_url || channel.thumbnail_url}
-                    alt={channel.display_name}
-                    className="channel-avatar"
-                  />
-                  <div className="channel-info">
-                    <span className="channel-name">{channel.display_name}</span>
-                    {channel.is_live ? (
-                      <span className="channel-viewers live-indicator">
-                        EN DIRECT - {channel.viewer_count || 0} viewers
-                      </span>
-                    ) : (
-                      channel.viewer_count !== undefined && (
-                        <span className="channel-viewers">{channel.viewer_count} viewers</span>
-                      )
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="no-channels">Aucune chaine suivie pour le moment</p>
-            )}
-          </div>
-        </div>
       </div>
 
       <div className="dashboard-right">

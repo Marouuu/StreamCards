@@ -28,23 +28,22 @@
 .mp-back-btn {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 1.3rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
   outline: none;
 }
 
 .mp-back-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .mp-header h1 {
@@ -112,15 +111,17 @@
 /* Tabs */
 .mp-tabs {
   display: flex;
-  gap: 0.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 3px;
 }
 
 .mp-tab {
-  padding: 0.7rem 1.5rem;
+  padding: 0.5rem 1.2rem;
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-radius: 12px;
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.9rem;
   font-weight: 600;
@@ -133,7 +134,7 @@
 }
 
 .mp-tab:hover { color: rgba(255, 255, 255, 0.8); }
-.mp-tab.active { color: white; border-bottom-color: #22c55e; }
+.mp-tab.active { color: white; background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
 
 .mp-tab-badge {
   background: #22c55e;
@@ -169,7 +170,7 @@
 }
 
 .mp-search::placeholder { color: rgba(255, 255, 255, 0.4); }
-.mp-search:focus { border-color: rgba(34, 197, 94, 0.5); }
+.mp-search:focus { border-color: rgba(139, 92, 246, 0.5); }
 
 .mp-select {
   padding: 0.55rem 0.75rem;
@@ -482,9 +483,9 @@
 .mp-sell-rarity.rarity-common { background: rgba(160, 160, 160, 0.2); color: #a0a0a0; }
 .mp-sell-rarity.rarity-uncommon { background: rgba(46, 204, 64, 0.2); color: #2ecc40; }
 .mp-sell-rarity.rarity-rare { background: rgba(0, 150, 255, 0.2); color: #0096ff; }
-.mp-sell-rarity.rarity-epic { background: rgba(150, 0, 255, 0.2); color: #9b59b6; }
+.mp-sell-rarity.rarity-epic { background: rgba(150, 0, 255, 0.2); color: #9600ff; }
 .mp-sell-rarity.rarity-legendary { background: rgba(255, 215, 0, 0.2); color: #ffd700; }
-.mp-sell-rarity.rarity-ultra-legendary { background: linear-gradient(135deg, rgba(255, 0, 64, 0.2), rgba(255, 0, 255, 0.2)); color: #ff69b4; }
+.mp-sell-rarity.rarity-ultra-legendary { background: linear-gradient(135deg, rgba(255, 0, 64, 0.2), rgba(255, 0, 255, 0.2)); color: #ff00ff; }
 
 .mp-price-label-input {
   display: flex;
@@ -509,7 +510,7 @@
   width: 120px;
 }
 
-.mp-price-label-input input:focus { border-color: rgba(34, 197, 94, 0.5); }
+.mp-price-label-input input:focus { border-color: rgba(139, 92, 246, 0.5); }
 
 .mp-sell-actions {
   display: flex;

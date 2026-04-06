@@ -515,16 +515,55 @@
 .reveal-dot.done.rarity-dot--legendary { background: #ffd700; }
 .reveal-dot.done.rarity-dot--ultra-legendary { background: #ff00ff; }
 
-/* Recap 3D card containers */
-.recap-card-3d-container {
+/* Recap 2D card containers */
+.recap-card-2d {
   width: 150px;
   height: 210px;
+  border-radius: 10px;
+  border: 3px solid #a0a0a0;
+  overflow: hidden;
+  position: relative;
+  background: #1a1a2e;
 }
 
-.recap-card-3d-container canvas {
+.recap-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
-  width: 100% !important;
-  height: 100% !important;
+}
+
+.recap-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recap-card-emoji {
+  font-size: 3rem;
+  opacity: 0.3;
+}
+
+.recap-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem 0.4rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+}
+
+.recap-card-overlay-name {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recap-card-name {
@@ -583,7 +622,7 @@
     gap: 0.8rem;
   }
 
-  .recap-card-3d-container {
+  .recap-card-2d {
     width: 110px;
     height: 154px;
   }
@@ -617,7 +656,7 @@
 }
 
 @media (max-width: 400px) {
-  .recap-card-3d-container {
+  .recap-card-2d {
     width: 90px;
     height: 126px;
   }

@@ -1,0 +1,11 @@
+/* ============================================
+   Floating Background — Three.js real cards
+   ============================================ */
+
+.floating-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(3px);
+}

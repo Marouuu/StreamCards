@@ -18,23 +18,22 @@
 .lb-back-btn {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 1.3rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
   outline: none;
 }
 
 .lb-back-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .lb-header h1 {
@@ -206,7 +205,7 @@
   transform: translateX(-50%);
   font-size: 0.55rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white;
   padding: 1px 6px;
   border-radius: 6px;
@@ -339,7 +338,7 @@
 .lb-streamer-tag {
   font-size: 0.6rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white;
   padding: 1px 5px;
   border-radius: 4px;

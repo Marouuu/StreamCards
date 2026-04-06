@@ -58,6 +58,15 @@ export const api = {
     }
   },
 
+  // Random cards (public, no auth needed)
+  getRandomCards: async (limit = 20) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/cards/random?limit=${limit}`);
+      const data = await safeJson(res);
+      return data.cards || [];
+    } catch { return []; }
+  },
+
   // Cards (URL builders — used by Shop/Collection components)
   getStreamerCards: (streamerId) => `${API_BASE_URL}/cards/streamer/${streamerId}`,
   getUserCollection: (userId) => `${API_BASE_URL}/cards/collection/${userId}`,

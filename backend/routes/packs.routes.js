@@ -175,7 +175,19 @@ router.delete('/:id', authenticate, async (req, res) => {
 // CARD MANAGEMENT (within a booster pack)
 // ============================================================
 
-const VALID_EFFECTS = ['none', 'holographic', 'shining', 'shadow'];
+const VALID_EFFECTS = [
+  'none',
+  // Light & Energy
+  'holographic', 'shining', 'prismatic', 'neon-glow', 'aurora',
+  // Fire & Heat
+  'lava',
+  // Electric
+  'electric-pulse',
+  // Dark & Mystic
+  'shadow', 'dark-aura', 'void-portal',
+  // Nature & Cosmic
+  'leaves', 'galaxy',
+];
 
 function validateCard(data) {
   const errors = [];

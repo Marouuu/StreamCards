@@ -188,26 +188,31 @@
    EFFECTS
    ============================================ */
 
-/* Holographic — rainbow shimmer that moves on hover */
-.card-preview__holo {
+/* Base effect layer — guarantees overlay on top of card content */
+.card-preview__effect {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 10;
   pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Holographic — rainbow shimmer that moves on hover */
+.card-preview__holo {
   background: linear-gradient(
     135deg,
-    rgba(255, 0, 0, 0.15) 0%,
-    rgba(255, 127, 0, 0.15) 14%,
-    rgba(255, 255, 0, 0.15) 28%,
-    rgba(0, 255, 0, 0.15) 42%,
-    rgba(0, 0, 255, 0.15) 57%,
-    rgba(75, 0, 130, 0.15) 71%,
-    rgba(148, 0, 211, 0.15) 85%,
-    rgba(255, 0, 0, 0.15) 100%
+    rgba(255, 0, 0, 0.25) 0%,
+    rgba(255, 127, 0, 0.25) 14%,
+    rgba(255, 255, 0, 0.25) 28%,
+    rgba(0, 255, 0, 0.25) 42%,
+    rgba(0, 0, 255, 0.25) 57%,
+    rgba(75, 0, 130, 0.25) 71%,
+    rgba(148, 0, 211, 0.25) 85%,
+    rgba(255, 0, 0, 0.25) 100%
   );
   background-size: 200% 200%;
   opacity: var(--effect-intensity);
-  mix-blend-mode: screen;
+  mix-blend-mode: hard-light;
   animation: holo-shift 4s ease-in-out infinite;
 }
 
@@ -223,10 +228,6 @@
 
 /* Shining — bright light sweep */
 .card-preview__shine {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
   overflow: hidden;
   opacity: var(--effect-intensity);
 }
@@ -241,32 +242,31 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
+    rgba(255,255,255,0.5) 40%,
     var(--effect-color) 50%,
+    rgba(255,255,255,0.5) 60%,
     transparent 100%
   );
-  opacity: 0.3;
+  opacity: 0.5;
   transform: rotate(25deg);
   animation: shine-sweep 3s ease-in-out infinite;
 }
 
 @keyframes shine-sweep {
-  0% { left: -50%; }
-  50% { left: 120%; }
-  100% { left: 120%; }
+  0% { left: -60%; }
+  50% { left: 130%; }
+  100% { left: 130%; }
 }
 
 .card-preview:hover .card-preview__shine::after {
   animation-duration: 1s;
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 /* Shadow / fog — dark mist around edges */
 .card-preview__shadow {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
   opacity: var(--effect-intensity);
+  overflow: hidden;
 }
 
 .card-preview__shadow::before,
@@ -274,7 +274,7 @@
   content: '';
   position: absolute;
   border-radius: 50%;
-  filter: blur(20px);
+  filter: blur(15px);
   animation: shadow-drift 6s ease-in-out infinite;
 }
 
@@ -284,7 +284,7 @@
   bottom: -10%;
   left: -10%;
   background: radial-gradient(ellipse, var(--effect-color) 0%, transparent 70%);
-  opacity: 0.25;
+  opacity: 0.35;
 }
 
 .card-preview__shadow::after {
@@ -293,7 +293,7 @@
   top: -5%;
   right: -10%;
   background: radial-gradient(ellipse, var(--effect-color) 0%, transparent 70%);
-  opacity: 0.15;
+  opacity: 0.25;
   animation-delay: -3s;
 }
 
@@ -303,6 +303,238 @@
   50% { transform: translate(-3%, -2%) scale(0.95); }
   75% { transform: translate(2%, -4%) scale(1.02); }
 }
+
+/* ── Prismatic — intense rainbow refraction ── */
+.card-preview__prismatic {
+  background: conic-gradient(from 0deg at 50% 50%,
+    #ff000088, #ff880088, #ffff0088, #00ff0088, #0088ff88, #8800ff88, #ff000088);
+  mix-blend-mode: hard-light;
+  opacity: var(--effect-intensity);
+  animation: prismatic-spin 5s linear infinite;
+}
+@keyframes prismatic-spin {
+  0% { filter: hue-rotate(0deg) brightness(1.4); }
+  100% { filter: hue-rotate(360deg) brightness(1.4); }
+}
+.card-preview:hover .card-preview__prismatic { animation-duration: 2s; }
+
+/* ── Neon Glow — pulsing neon from edges ── */
+.card-preview__neon-glow {
+  box-shadow:
+    inset 0 0 25px var(--effect-color),
+    inset 0 0 50px var(--effect-color),
+    inset 0 0 80px color-mix(in srgb, var(--effect-color) 50%, transparent);
+  opacity: var(--effect-intensity);
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+@keyframes neon-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 25px var(--effect-color), inset 0 0 50px var(--effect-color), inset 0 0 80px color-mix(in srgb, var(--effect-color) 50%, transparent);
+  }
+  50% {
+    box-shadow: inset 0 0 40px var(--effect-color), inset 0 0 80px var(--effect-color), inset 0 0 120px color-mix(in srgb, var(--effect-color) 60%, transparent);
+  }
+}
+
+/* ── Aurora — vivid northern lights ── */
+.card-preview__aurora {
+  overflow: hidden;
+  opacity: var(--effect-intensity);
+}
+.card-preview__aurora::before {
+  content: ''; position: absolute; width: 200%; height: 130%; top: -15%; left: -50%;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(0, 255, 128, 0.5) 15%,
+    rgba(0, 180, 255, 0.6) 35%,
+    rgba(160, 0, 255, 0.5) 55%,
+    rgba(0, 255, 200, 0.4) 75%,
+    transparent 100%);
+  animation: aurora-wave 5s ease-in-out infinite;
+  filter: blur(6px);
+}
+.card-preview__aurora::after {
+  content: ''; position: absolute; width: 180%; height: 110%; top: 0; left: -40%;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(0, 220, 255, 0.35) 25%,
+    rgba(220, 0, 255, 0.4) 50%,
+    rgba(0, 255, 180, 0.3) 75%,
+    transparent 100%);
+  animation: aurora-wave 7s ease-in-out infinite reverse;
+  filter: blur(10px);
+}
+@keyframes aurora-wave {
+  0%, 100% { transform: translateX(0) skewX(0deg); }
+  25% { transform: translateX(25%) skewX(10deg); }
+  50% { transform: translateX(-20%) skewX(-8deg); }
+  75% { transform: translateX(15%) skewX(5deg); }
+}
+
+
+/* ── Lava — molten flowing lava ── */
+.card-preview__lava {
+  overflow: hidden;
+  opacity: var(--effect-intensity);
+}
+.card-preview__lava::before {
+  content: ''; position: absolute; width: 250%; height: 250%; top: -75%; left: -75%;
+  background:
+    radial-gradient(circle at 30% 70%, #ff3c00aa 0%, transparent 35%),
+    radial-gradient(circle at 70% 30%, #ff9900aa 0%, transparent 30%),
+    radial-gradient(circle at 50% 50%, #ff0000aa 0%, transparent 40%);
+  animation: lava-churn 6s ease-in-out infinite;
+}
+.card-preview__lava::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+  background: linear-gradient(0deg, #ff440066 0%, transparent 100%);
+  animation: lava-pulse 2s ease-in-out infinite;
+}
+@keyframes lava-churn {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  33% { transform: rotate(120deg) scale(1.1); }
+  66% { transform: rotate(240deg) scale(0.95); }
+}
+@keyframes lava-pulse {
+  0%, 100% { opacity: 0.6; height: 35%; }
+  50% { opacity: 1; height: 50%; }
+}
+
+
+
+
+
+
+/* ── Electric Pulse — expanding electric rings ── */
+.card-preview__electric-pulse {
+  overflow: hidden;
+  opacity: var(--effect-intensity);
+}
+.card-preview__electric-pulse::before, .card-preview__electric-pulse::after {
+  content: ''; position: absolute;
+  top: 50%; left: 50%; width: 15%; height: 15%;
+  border-radius: 50%;
+  border: 3px solid var(--effect-color);
+  box-shadow: 0 0 15px var(--effect-color), 0 0 30px var(--effect-color);
+  transform: translate(-50%, -50%);
+  animation: epulse-expand 2s ease-out infinite;
+}
+.card-preview__electric-pulse::after { animation-delay: -1s; }
+@keyframes epulse-expand {
+  0% { width: 10%; height: 10%; opacity: 1; border-width: 4px; }
+  100% { width: 180%; height: 180%; opacity: 0; border-width: 1px; }
+}
+
+/* ── Dark Aura — creeping darkness ── */
+.card-preview__dark-aura {
+  box-shadow:
+    inset 0 0 40px rgba(0, 0, 0, 0.8),
+    inset 0 0 80px color-mix(in srgb, var(--effect-color) 30%, black);
+  opacity: var(--effect-intensity);
+  animation: dark-aura-pulse 3s ease-in-out infinite;
+}
+.card-preview__dark-aura::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(0,0,0,0.6) 100%);
+}
+@keyframes dark-aura-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.8), inset 0 0 80px color-mix(in srgb, var(--effect-color) 30%, black);
+  }
+  50% {
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.9), inset 0 0 120px color-mix(in srgb, var(--effect-color) 40%, black);
+  }
+}
+
+/* ── Void Portal — swirling dark vortex ── */
+.card-preview__void-portal {
+  overflow: hidden;
+  opacity: var(--effect-intensity);
+}
+.card-preview__void-portal::before {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 180%; height: 180%;
+  background: conic-gradient(from 0deg at 50% 50%,
+    transparent 0%, #6400c8aa 12%, transparent 25%,
+    #3c007888 37%, transparent 50%,
+    #9600ffaa 62%, transparent 75%,
+    #4b009688 87%, transparent 100%);
+  transform: translate(-50%, -50%);
+  animation: void-spin 5s linear infinite;
+}
+.card-preview__void-portal::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 25%, rgba(20,0,40,0.6) 100%);
+}
+@keyframes void-spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ── Leaves — floating nature leaves ── */
+.card-preview__leaves {
+  overflow: hidden;
+  opacity: var(--effect-intensity);
+}
+.card-preview__leaves::before {
+  content: '🍃 🍂 🍃 🍂 🍃 🍂'; position: absolute;
+  font-size: 1.2em;
+  left: -10%; top: -20%;
+  width: 120%;
+  word-spacing: 15px;
+  letter-spacing: 10px;
+  line-height: 2.5;
+  filter: drop-shadow(0 0 4px rgba(0,200,0,0.5));
+  animation: leaf-float 6s linear infinite;
+}
+.card-preview__leaves::after {
+  content: '🍂 🍃 🍂 🍃 🍂 🍃'; position: absolute;
+  font-size: 1em;
+  left: 5%; top: -20%;
+  width: 120%;
+  word-spacing: 20px;
+  letter-spacing: 8px;
+  line-height: 3;
+  filter: drop-shadow(0 0 3px rgba(0,180,0,0.4));
+  animation: leaf-float-2 8s linear infinite;
+  animation-delay: -3s;
+}
+@keyframes leaf-float {
+  0% { transform: translateY(0) rotate(5deg); }
+  100% { transform: translateY(130%) rotate(-10deg); }
+}
+@keyframes leaf-float-2 {
+  0% { transform: translateY(0) rotate(-3deg) translateX(0); }
+  50% { transform: translateY(65%) rotate(8deg) translateX(10%); }
+  100% { transform: translateY(130%) rotate(-5deg) translateX(-5%); }
+}
+
+/* ── Galaxy — swirling cosmic nebula ── */
+.card-preview__galaxy {
+  overflow: hidden;
+  opacity: var(--effect-intensity);
+}
+.card-preview__galaxy::before {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 220%; height: 220%;
+  background:
+    radial-gradient(ellipse at 35% 35%, #7c3affaa 0%, transparent 30%),
+    radial-gradient(ellipse at 65% 65%, #3c82ffaa 0%, transparent 25%),
+    radial-gradient(ellipse at 50% 50%, #dc78ffaa 0%, transparent 40%);
+  transform: translate(-50%, -50%);
+  animation: galaxy-swirl 8s linear infinite;
+}
+.card-preview__galaxy::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse, transparent 15%, rgba(10,0,30,0.35) 100%);
+}
+@keyframes galaxy-swirl {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+
+
 
 /* ── Animated borders by rarity ── */
 

@@ -114,7 +114,7 @@ const CARD_W = 2.5;
 const CARD_H = 3.5;
 const CARD_D = 0.03;
 const CORNER_R = 0.12;
-const SWIPE_THRESHOLD = 1.5;
+// Swipe threshold for flip-to-reveal is defined inline in FlippableCard
 
 // ── Texture hooks ──
 function useImageTexture(url) {
@@ -343,164 +343,331 @@ function useCardFrontTexture(card) {
 
 // No shared geometry needed — using planes + box for reliable texture mapping
 
-// ── Swipeable 3D Card ──
-function SwipeableCard({ card, isActive, onFlip, onSwiped }) {
+// ── Sound effects for rare cards ──
+function playRareAnticipationSound(ctx, rarity) {
+  const time = ctx.currentTime;
+  const isLeg = rarity === 'legendary' || rarity === 'ultra-legendary';
+
+  // Rising sweep — builds tension
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(isLeg ? 80 : 120, time);
+  osc.frequency.exponentialRampToValueAtTime(isLeg ? 800 : 500, time + (isLeg ? 1.2 : 0.8));
+  gain.gain.setValueAtTime(0, time);
+  gain.gain.linearRampToValueAtTime(isLeg ? 0.12 : 0.08, time + 0.2);
+  gain.gain.setValueAtTime(isLeg ? 0.12 : 0.08, time + (isLeg ? 1.0 : 0.6));
+  gain.gain.exponentialRampToValueAtTime(0.001, time + (isLeg ? 1.3 : 0.9));
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(300, time);
+  lp.frequency.exponentialRampToValueAtTime(4000, time + (isLeg ? 1.2 : 0.8));
+  osc.connect(lp).connect(gain).connect(ctx.destination);
+  osc.start(time);
+  osc.stop(time + (isLeg ? 1.4 : 1.0));
+
+  // Sub bass rumble
+  const sub = ctx.createOscillator();
+  const subGain = ctx.createGain();
+  sub.type = 'sine';
+  sub.frequency.value = 50;
+  subGain.gain.setValueAtTime(0, time);
+  subGain.gain.linearRampToValueAtTime(isLeg ? 0.15 : 0.08, time + 0.3);
+  subGain.gain.exponentialRampToValueAtTime(0.001, time + (isLeg ? 1.3 : 0.9));
+  sub.connect(subGain).connect(ctx.destination);
+  sub.start(time);
+  sub.stop(time + 1.4);
+}
+
+function playRareRevealSound(ctx, rarity) {
+  const time = ctx.currentTime;
+  const isUltra = rarity === 'ultra-legendary';
+  const isLeg = rarity === 'legendary' || isUltra;
+
+  // Impact hit
+  const bufferSize = ctx.sampleRate * 0.3;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const d = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const nGain = ctx.createGain();
+  nGain.gain.setValueAtTime(isLeg ? 0.2 : 0.12, time);
+  nGain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+  noise.connect(nGain).connect(ctx.destination);
+  noise.start(time);
+
+  // Bright chord stab
+  const notes = isUltra ? [523, 659, 784, 1047] : isLeg ? [440, 554, 659] : [523, 659];
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(isLeg ? 0.15 : 0.1, time + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + (isLeg ? 1.5 : 0.8));
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(time);
+    osc.stop(time + 1.6);
+  });
+
+  // Shimmering tail for legendary+
+  if (isLeg) {
+    for (let i = 0; i < 4; i++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 1200 + i * 400 + Math.random() * 200;
+      const t = time + 0.1 + i * 0.12;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.04, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.7);
+    }
+  }
+}
+
+// ── Flippable 3D Card ──
+// Swipe left/right to flip, swipe again when flipped to go to next card
+const SWIPE_FLIP_THRESHOLD = 0.4;
+
+function FlippableCard({ card, isActive, isNextInStack, onFlip, onNext, audioCtx }) {
   const groupRef = useRef();
+  const glowRef = useRef();
   const { gl } = useThree();
   const rarity = card.rarity || 'common';
   const glowColor = card.outline_color || RARITY_COLORS[rarity] || '#a0a0a0';
   const isHighRarity = ['epic', 'legendary', 'ultra-legendary'].includes(rarity);
+  const isRareOrAbove = ['rare', 'epic', 'legendary', 'ultra-legendary'].includes(rarity);
 
   const frontTex = useCardFrontTexture(card);
   const backTex = useCardBackTexture(rarity);
 
   const stateRef = useRef({
-    flipped: false, flipAnim: 1, // starts showing back
-    dragging: false, dragStart: new THREE.Vector2(),
-    dragOffset: new THREE.Vector2(0, 0),
-    dismissed: false, dismissDir: new THREE.Vector2(0, 0), dismissProgress: 0,
-    enterAnim: 0, enterStartTime: -1,
+    flipped: false, flipAnim: 1, // starts showing back (1 = back, 0 = front)
+    dragging: false, dragStartX: 0,
+    dragOffsetX: 0,
+    leaving: false, leaveDir: 0, leaveProgress: 0,
+    // No entrance animation — cards are already positioned in the stack
     bobPhase: Math.random() * Math.PI * 2,
+    showSparkles: false,
+    // Rare card effects
+    anticipation: false, anticipationStart: -1,
+    revealed: false, revealFlashProgress: 0,
+    glowIntensity: 0,
+    shakeIntensity: 0,
   });
 
+  const handleAction = useCallback((dx) => {
+    const s = stateRef.current;
+    const absDx = Math.abs(dx);
+
+    if (absDx < 0.1) return; // too small, ignore
+
+    if (!s.flipped) {
+      if (isRareOrAbove && !s.anticipation) {
+        // Start anticipation phase for rare+ cards
+        s.anticipation = true;
+        s.anticipationStart = -1; // will be set in useFrame
+        if (audioCtx) playRareAnticipationSound(audioCtx, rarity);
+        // Delay the actual flip
+        const delay = (rarity === 'legendary' || rarity === 'ultra-legendary') ? 1200 : 800;
+        setTimeout(() => {
+          s.flipped = true;
+          s.revealed = true;
+          s.showSparkles = isHighRarity;
+          s.anticipation = false;
+          if (audioCtx) playRareRevealSound(audioCtx, rarity);
+          if (onFlip) onFlip();
+        }, delay);
+      } else if (!isRareOrAbove) {
+        // Instant flip for common/uncommon
+        s.flipped = true;
+        s.showSparkles = false;
+        if (onFlip) onFlip();
+      }
+      // If anticipation is already running, ignore additional swipes
+    } else {
+      // Already flipped: swipe to next card
+      if (absDx > SWIPE_FLIP_THRESHOLD) {
+        s.leaving = true;
+        s.leaveDir = dx > 0 ? 1 : -1;
+        if (onNext) setTimeout(onNext, 350);
+      }
+    }
+  }, [onFlip, onNext, isHighRarity, isRareOrAbove, rarity, audioCtx]);
+
   const onPointerDown = useCallback((e) => {
-    if (!isActive || stateRef.current.dismissed) return;
+    if (!isActive || stateRef.current.leaving) return;
     e.stopPropagation();
     stateRef.current.dragging = true;
-    stateRef.current.dragStart.set(e.point.x, e.point.y);
+    stateRef.current.dragStartX = e.point.x;
+    stateRef.current.dragOffsetX = 0;
     gl.domElement.style.cursor = 'grabbing';
   }, [isActive, gl]);
 
   const onPointerMove = useCallback((e) => {
     if (!stateRef.current.dragging || !isActive) return;
     e.stopPropagation();
-    const dx = e.point.x - stateRef.current.dragStart.x;
-    const dy = e.point.y - stateRef.current.dragStart.y;
-    stateRef.current.dragOffset.set(dx, dy);
+    stateRef.current.dragOffsetX = e.point.x - stateRef.current.dragStartX;
   }, [isActive]);
 
   const onPointerUp = useCallback((e) => {
-    if (!isActive) return;
+    if (!isActive || !stateRef.current.dragging) return;
     e.stopPropagation();
-    const s = stateRef.current;
-    s.dragging = false;
+    stateRef.current.dragging = false;
     gl.domElement.style.cursor = 'grab';
+    handleAction(stateRef.current.dragOffsetX);
+    if (!stateRef.current.leaving) stateRef.current.dragOffsetX = 0;
+  }, [isActive, gl, handleAction]);
 
-    const dist = s.dragOffset.length();
-
-    if (dist < 0.15 && !s.flipped) {
-      // Click → flip
-      s.flipped = true;
-      if (onFlip) onFlip();
-    } else if (dist > SWIPE_THRESHOLD && s.flipped) {
-      // Swipe away
-      s.dismissed = true;
-      s.dismissDir.copy(s.dragOffset).normalize();
-      if (onSwiped) setTimeout(onSwiped, 400);
-    } else {
-      // Snap back
-      s.dragOffset.set(0, 0);
-    }
-  }, [isActive, onFlip, onSwiped, gl]);
-
-  // Handle pointer up outside card mesh
   useEffect(() => {
     const handleUp = () => {
       const s = stateRef.current;
       if (s.dragging) {
         s.dragging = false;
         gl.domElement.style.cursor = 'default';
-        const dist = s.dragOffset.length();
-        if (dist > SWIPE_THRESHOLD && s.flipped) {
-          s.dismissed = true;
-          s.dismissDir.copy(s.dragOffset).normalize();
-          if (onSwiped) setTimeout(onSwiped, 400);
-        } else if (dist < 0.15 && !s.flipped) {
-          s.flipped = true;
-          if (onFlip) onFlip();
-        } else {
-          s.dragOffset.set(0, 0);
-        }
+        handleAction(s.dragOffsetX);
+        if (!s.leaving) s.dragOffsetX = 0;
       }
     };
     gl.domElement.addEventListener('pointerup', handleUp);
     return () => gl.domElement.removeEventListener('pointerup', handleUp);
-  }, [gl, onFlip, onSwiped]);
+  }, [gl, handleAction]);
 
   useFrame((state, delta) => {
     if (!groupRef.current) return;
     const s = stateRef.current;
     const t = state.clock.elapsedTime;
 
-    // Entrance
-    if (s.enterStartTime < 0) s.enterStartTime = t;
-    const enterElapsed = t - s.enterStartTime;
-    s.enterAnim = Math.min(1, enterElapsed / 0.5);
-    const enterEase = 1 - Math.pow(1 - s.enterAnim, 3);
-
-    // Flip
+    // Flip lerp
     const flipTarget = s.flipped ? 0 : 1;
-    s.flipAnim += (flipTarget - s.flipAnim) * 0.1;
+    s.flipAnim += (flipTarget - s.flipAnim) * 0.12;
 
-    // Dismiss
-    if (s.dismissed) {
-      s.dismissProgress += delta * 3;
-      const dp = Math.min(s.dismissProgress, 1);
-      groupRef.current.position.x = s.dismissDir.x * dp * 12;
-      groupRef.current.position.y = s.dismissDir.y * dp * 12;
-      groupRef.current.rotation.z = s.dismissDir.x * dp * 0.8;
+    // Leave animation
+    if (s.leaving) {
+      s.leaveProgress += delta * 3.5;
+      const lp = Math.min(s.leaveProgress, 1);
+      const eased = 1 - Math.pow(1 - lp, 2);
+      groupRef.current.position.x = s.leaveDir * eased * 8;
       groupRef.current.rotation.y = s.flipAnim * Math.PI;
-      groupRef.current.scale.setScalar(Math.max(0, 1 - dp * 0.5));
+      groupRef.current.rotation.z = s.leaveDir * eased * 0.3;
+      groupRef.current.scale.setScalar(Math.max(0.3, 1 - eased * 0.5));
+      groupRef.current.position.y = 0;
       return;
+    }
+
+    // Anticipation phase — screen shake + glow buildup
+    if (s.anticipation) {
+      if (s.anticipationStart < 0) s.anticipationStart = t;
+      const elapsed = t - s.anticipationStart;
+      const isLeg = rarity === 'legendary' || rarity === 'ultra-legendary';
+      const duration = isLeg ? 1.2 : 0.8;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Increasing shake
+      s.shakeIntensity = progress * (isLeg ? 0.08 : 0.04);
+      const shakeX = Math.sin(t * 60) * s.shakeIntensity;
+      const shakeY = Math.cos(t * 45) * s.shakeIntensity * 0.5;
+
+      // Glow buildup
+      s.glowIntensity = progress * (isLeg ? 8 : 4);
+
+      const bob = Math.sin(t * 0.8 + s.bobPhase) * 0.04;
+      groupRef.current.position.x = shakeX;
+      groupRef.current.position.y = bob + shakeY;
+      groupRef.current.scale.setScalar(1 + progress * 0.05); // slight scale up
+      groupRef.current.rotation.y = s.flipAnim * Math.PI;
+      groupRef.current.rotation.z = Math.sin(t * 50) * s.shakeIntensity * 0.3;
+
+      if (glowRef.current) glowRef.current.intensity = s.glowIntensity;
+      return;
+    }
+
+    // Post-reveal flash
+    if (s.revealed && s.revealFlashProgress < 1) {
+      s.revealFlashProgress += delta * 2;
+      s.glowIntensity = Math.max(0, (1 - s.revealFlashProgress) * 10);
+      if (glowRef.current) glowRef.current.intensity = s.glowIntensity;
+    } else if (!s.revealed) {
+      s.glowIntensity = 0;
+      if (glowRef.current) glowRef.current.intensity = 0;
     }
 
     // Drag snap-back
     if (!s.dragging) {
-      s.dragOffset.x *= 0.85;
-      s.dragOffset.y *= 0.85;
+      s.dragOffsetX *= 0.85;
     }
 
-    const entranceY = (1 - enterEase) * -3;
-    const bob = Math.sin(t * 0.8 + s.bobPhase) * 0.06 * enterEase;
+    const bob = Math.sin(t * 0.8 + s.bobPhase) * 0.04;
 
-    groupRef.current.position.x = s.dragOffset.x;
-    groupRef.current.position.y = s.dragOffset.y + bob + entranceY;
-    groupRef.current.scale.setScalar(0.5 + enterEase * 0.5);
-    groupRef.current.rotation.x = -s.dragOffset.y * 0.08;
+    groupRef.current.position.x = s.dragOffsetX * 0.5;
+    groupRef.current.position.y = bob;
+    groupRef.current.scale.setScalar(1);
     groupRef.current.rotation.y = s.flipAnim * Math.PI;
-    groupRef.current.rotation.z = -s.dragOffset.x * 0.06;
+    groupRef.current.rotation.z = -s.dragOffsetX * 0.04;
   });
+
+  // Determine sparkle settings based on state
+  const showAnticipationFx = stateRef.current.anticipation;
+  const showRevealFx = stateRef.current.revealed;
 
   return (
     <group ref={groupRef}>
-      {/* Front face — card image (faces +Z, offset to avoid z-fighting) */}
+      {/* Front face */}
       <mesh position={[0, 0, CARD_D / 2 + 0.002]} renderOrder={1}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}>
         <planeGeometry args={[CARD_W, CARD_H]} />
         <meshStandardMaterial map={frontTex} metalness={isHighRarity ? 0.4 : 0.1} roughness={isHighRarity ? 0.3 : 0.5} />
       </mesh>
 
-      {/* Back face — card back design (faces -Z, offset to avoid z-fighting) */}
+      {/* Back face */}
       <mesh position={[0, 0, -(CARD_D / 2 + 0.002)]} rotation={[0, Math.PI, 0]} renderOrder={1}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}>
         <planeGeometry args={[CARD_W, CARD_H]} />
         <meshStandardMaterial map={backTex} metalness={0.2} roughness={0.5} />
       </mesh>
 
-      {/* Thin edge (gives the card thickness) */}
+      {/* Edge */}
       <mesh>
         <boxGeometry args={[CARD_W, CARD_H, CARD_D]} />
         <meshStandardMaterial color={glowColor} metalness={0.3} roughness={0.4} />
       </mesh>
 
+      {/* Dynamic glow light — used for anticipation buildup + reveal flash */}
+      {isRareOrAbove && (
+        <pointLight ref={glowRef} position={[0, 0, 0.6]} intensity={0} color={glowColor} distance={8} />
+      )}
+
+      {/* Base glow for high rarity */}
       {isHighRarity && (
         <pointLight position={[0, 0, 0.4]}
           intensity={rarity === 'ultra-legendary' ? 2.5 : rarity === 'legendary' ? 1.8 : 1}
           color={glowColor} distance={5} />
       )}
       <pointLight position={[0, 0, -0.3]} intensity={0.3} color={glowColor} distance={3} />
-      {isHighRarity && stateRef.current.flipped && (
-        <Sparkles count={30} scale={[4, 5, 2]} size={2} speed={0.5} color={glowColor} />
+
+      {/* Anticipation sparkles — build up before flip */}
+      {isRareOrAbove && (
+        <Sparkles
+          count={rarity === 'ultra-legendary' ? 80 : rarity === 'legendary' ? 60 : rarity === 'epic' ? 40 : 25}
+          scale={[CARD_W + 1, CARD_H + 1, 2]}
+          size={rarity === 'ultra-legendary' ? 4 : rarity === 'legendary' ? 3 : 2}
+          speed={isHighRarity ? 2 : 1}
+          opacity={0.8}
+          color={glowColor}
+        />
+      )}
+
+      {/* Post-reveal explosion of sparkles */}
+      {isHighRarity && showRevealFx && (
+        <>
+          <Sparkles count={100} scale={[6, 7, 4]} size={5} speed={3} opacity={1} color={glowColor} />
+          <Sparkles count={50} scale={[8, 9, 5]} size={3} speed={1.5} opacity={0.6} color="#ffffff" />
+        </>
       )}
     </group>
   );
@@ -510,7 +677,7 @@ function SwipeableCard({ card, isActive, onFlip, onSwiped }) {
 function CardRevealScene({ sortedCards, onAllRevealed, onStateChange, audioCtx }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flippedSet, setFlippedSet] = useState(new Set());
-  const [swipedSet, setSwipedSet] = useState(new Set());
+  const [doneSet, setDoneSet] = useState(new Set());
 
   const isFlipped = flippedSet.has(currentIndex);
 
@@ -520,19 +687,19 @@ function CardRevealScene({ sortedCards, onAllRevealed, onStateChange, audioCtx }
         currentIndex,
         isFlipped,
         total: sortedCards.length,
-        swipedCount: swipedSet.size,
+        swipedCount: doneSet.size,
         currentCard: sortedCards[currentIndex],
       });
     }
-  }, [currentIndex, isFlipped, swipedSet.size]);
+  }, [currentIndex, isFlipped, doneSet.size]);
 
   const handleFlip = useCallback(() => {
     setFlippedSet(prev => new Set(prev).add(currentIndex));
     if (audioCtx) playCardRevealSound(audioCtx, currentIndex);
   }, [currentIndex, audioCtx]);
 
-  const handleSwiped = useCallback(() => {
-    setSwipedSet(prev => new Set(prev).add(currentIndex));
+  const handleNext = useCallback(() => {
+    setDoneSet(prev => new Set(prev).add(currentIndex));
     if (currentIndex + 1 < sortedCards.length) {
       setCurrentIndex(prev => prev + 1);
     } else {
@@ -548,16 +715,19 @@ function CardRevealScene({ sortedCards, onAllRevealed, onStateChange, audioCtx }
       <directionalLight position={[-3, -2, 4]} intensity={0.3} />
 
       {sortedCards.map((card, i) => {
-        if (swipedSet.has(i)) return null;
+        if (doneSet.has(i)) return null;
         if (i > currentIndex + 1) return null;
         const isCurrent = i === currentIndex;
+        const isNext = i === currentIndex + 1;
         return (
           <group key={`${card.id || i}-${i}`} position={[0, 0, isCurrent ? 0 : -0.2]} scale={isCurrent ? 1 : 0.92}>
-            <SwipeableCard
+            <FlippableCard
               card={card}
               isActive={isCurrent}
+              isNextInStack={isNext}
               onFlip={isCurrent ? handleFlip : undefined}
-              onSwiped={isCurrent ? handleSwiped : undefined}
+              onNext={isCurrent ? handleNext : undefined}
+              audioCtx={audioCtx}
             />
           </group>
         );
@@ -717,7 +887,7 @@ function BoosterOpening({ booster, onClose, cards }) {
 
             <div className="card-reveal-canvas-full">
               <Canvas
-                camera={{ position: [0, 0, 5.5], fov: 45 }}
+                camera={{ position: [0, 0, 7], fov: 40 }}
                 gl={{ antialias: true, alpha: true }}
                 style={{ background: 'transparent', touchAction: 'none' }}
               >
@@ -735,10 +905,10 @@ function BoosterOpening({ booster, onClose, cards }) {
             {/* Overlay hints */}
             <div className="card-reveal-ui">
               {!revealState.isFlipped && (
-                <div className="reveal-hint reveal-hint--flip">Cliquez sur la carte pour la retourner</div>
+                <div className="reveal-hint reveal-hint--flip">Glissez vers la gauche ou la droite pour retourner</div>
               )}
               {revealState.isFlipped && (
-                <div className="reveal-hint reveal-hint--swipe">Glissez la carte pour voir la suivante</div>
+                <div className="reveal-hint reveal-hint--swipe">Glissez encore pour passer a la suivante</div>
               )}
 
               {revealState.isFlipped && currentCard && (
@@ -767,34 +937,40 @@ function BoosterOpening({ booster, onClose, cards }) {
           </div>
         )}
 
-        {/* ── RECAP: Summary of all cards ── */}
+        {/* ── RECAP: Summary of all cards (2D for fast loading) ── */}
         {phase === 'recap' && cards && (
           <div className="opened-cards-recap">
             <h3>Cartes obtenues !</h3>
 
             <div className="cards-reveal-grid">
-              {sortedCards.map((card, index) => (
-                <div key={index} className="card-reveal-wrapper" style={{ animationDelay: `${index * 0.1}s` }}>
-                  {card.isNew === false && <span className="card-badge card-badge--duplicate">DOUBLON</span>}
-                  {card.isNew === true && <span className="card-badge card-badge--new">NEW</span>}
-                  <div className="recap-card-3d-container">
-                    <Canvas camera={{ position: [0, 0, 4], fov: 45 }} gl={{ antialias: true, alpha: true }}
-                      style={{ background: 'transparent' }}>
-                      <ambientLight intensity={0.6} />
-                      <directionalLight position={[2, 3, 4]} intensity={1} />
-                      <Suspense fallback={null}>
-                        <RecapCard3D card={card} />
-                      </Suspense>
-                    </Canvas>
+              {sortedCards.map((card, index) => {
+                const cardRarity = card.rarity || 'common';
+                const borderColor = card.outline_color || RARITY_COLORS[cardRarity] || '#a0a0a0';
+                return (
+                  <div key={index} className="card-reveal-wrapper" style={{ animationDelay: `${index * 0.1}s` }}>
+                    {card.isNew === false && <span className="card-badge card-badge--duplicate">DOUBLON</span>}
+                    {card.isNew === true && <span className="card-badge card-badge--new">NEW</span>}
+                    <div className="recap-card-2d" style={{ borderColor }}>
+                      {card.image_url ? (
+                        <img src={card.image_url} alt={card.name || 'Card'} className="recap-card-img" loading="eager" />
+                      ) : (
+                        <div className="recap-card-placeholder" style={{ background: card.background_color || '#1a1a2e' }}>
+                          <span className="recap-card-emoji">&#127924;</span>
+                        </div>
+                      )}
+                      <div className="recap-card-overlay">
+                        <span className="recap-card-overlay-name">{card.name || 'Card'}</span>
+                      </div>
+                    </div>
+                    <span className={`recap-card-name rarity-text--${cardRarity}`}>
+                      {card.name || 'Card'}
+                    </span>
+                    <span className="recap-card-rarity">
+                      {cardRarity.toUpperCase().replace('-', ' ')}
+                    </span>
                   </div>
-                  <span className={`recap-card-name rarity-text--${card.rarity}`}>
-                    {card.name || 'Card'}
-                  </span>
-                  <span className={`recap-card-rarity`}>
-                    {(card.rarity || 'common').toUpperCase().replace('-', ' ')}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="recap-summary">

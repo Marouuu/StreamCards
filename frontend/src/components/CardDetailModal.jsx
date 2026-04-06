@@ -31,7 +31,7 @@ function CardDetailModal({ card, onClose }) {
           {/* 3D Card preview — interactive, can rotate */}
           <div className="card-detail-preview card-detail-3d">
             <Canvas
-              camera={{ position: [0, 0, 4], fov: 45 }}
+              camera={{ position: [0, 0, 5], fov: 40 }}
               gl={{ antialias: true, alpha: true }}
               style={{ background: 'transparent' }}
             >
@@ -43,7 +43,7 @@ function CardDetailModal({ card, onClose }) {
                   card={card}
                   floatAnimation={true}
                   autoRotate={false}
-                  scale={1}
+                  scale={0.85}
                 />
               </Suspense>
               <OrbitControls

@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS card_templates (
   is_active        BOOLEAN NOT NULL DEFAULT true,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT chk_card_rarity CHECK (rarity IN ('common','uncommon','rare','epic','legendary','ultra-legendary')),
-  CONSTRAINT chk_effect CHECK (effect IN ('none','holographic','shining','shadow')),
+  CONSTRAINT chk_effect CHECK (effect IN ('none','holographic','shining','prismatic','neon-glow','aurora','lava','electric-pulse','shadow','dark-aura','void-portal','leaves','galaxy')),
   CONSTRAINT chk_effect_intensity CHECK (effect_intensity BETWEEN 0 AND 100)
 );
 

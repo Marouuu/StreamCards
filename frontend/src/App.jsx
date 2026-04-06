@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
-import Background3D from './components/Background3D'
+import FloatingBackground from './components/FloatingBackground'
 import { ToastProvider, useToast } from './components/Toast'
 import Dashboard from './pages/Dashboard'
 import Shop from './pages/Shop'
@@ -110,7 +110,7 @@ function AppInner() {
 
   return (
     <div className="app">
-      <Background3D />
+      <FloatingBackground />
       <header className="app-header">
         <h1 className="app-logo" onClick={() => user && setCurrentPage('dashboard')}>
           <span className="logo-icon">&#127924;</span>

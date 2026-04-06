@@ -4,12 +4,36 @@ import CardPreview from '../components/CardPreview';
 import './CardEditor.css';
 
 const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'ultra-legendary'];
-const EFFECTS = [
-  { value: 'none', label: 'Aucun' },
-  { value: 'holographic', label: 'Holographique' },
-  { value: 'shining', label: 'Brillant' },
-  { value: 'shadow', label: 'Ombre / Brume' },
+const EFFECT_CATEGORIES = [
+  { category: 'Aucun', effects: [
+    { value: 'none', label: 'Aucun', icon: '❌' },
+  ]},
+  { category: 'Lumiere & Energie', effects: [
+    { value: 'holographic', label: 'Holographique', icon: '🌈' },
+    { value: 'shining', label: 'Brillant', icon: '✨' },
+    { value: 'prismatic', label: 'Prismatique', icon: '💎' },
+    { value: 'neon-glow', label: 'Neon', icon: '💡' },
+    { value: 'aurora', label: 'Aurore boreale', icon: '🌌' },
+  ]},
+  { category: 'Feu & Chaleur', effects: [
+    { value: 'lava', label: 'Lave', icon: '🌋' },
+  ]},
+  { category: 'Electrique', effects: [
+    { value: 'electric-pulse', label: 'Impulsion', icon: '🔌' },
+  ]},
+  { category: 'Sombre & Mystique', effects: [
+    { value: 'shadow', label: 'Ombre / Brume', icon: '🌫️' },
+    { value: 'dark-aura', label: 'Aura sombre', icon: '🖤' },
+    { value: 'void-portal', label: 'Portail du vide', icon: '🕳️' },
+  ]},
+  { category: 'Nature & Cosmos', effects: [
+    { value: 'leaves', label: 'Feuilles', icon: '🍃' },
+    { value: 'galaxy', label: 'Galaxie', icon: '🪐' },
+  ]},
 ];
+
+// Flat list for validation
+const ALL_EFFECTS = EFFECT_CATEGORIES.flatMap(c => c.effects);
 
 const RARITY_OUTLINE_DEFAULTS = {
   common: '#a0a0a0',
@@ -269,15 +293,24 @@ function CardEditor({ packId, packName, onBack }) {
 
           <div className="ce-form-section">
             <h3>Effet spécial</h3>
-            <div className="ce-effects">
-              {EFFECTS.map(e => (
-                <button
-                  key={e.value}
-                  className={`ce-effect-btn ${form.effect === e.value ? 'active' : ''}`}
-                  onClick={() => handleChange('effect', e.value)}
-                >
-                  {e.label}
-                </button>
+            <div className="ce-effects-grid">
+              {EFFECT_CATEGORIES.map(cat => (
+                <div key={cat.category} className="ce-effect-category">
+                  {cat.category !== 'Aucun' && <div className="ce-effect-category-label">{cat.category}</div>}
+                  <div className="ce-effect-category-items">
+                    {cat.effects.map(e => (
+                      <button
+                        key={e.value}
+                        className={`ce-effect-btn ${form.effect === e.value ? 'active' : ''}`}
+                        onClick={() => handleChange('effect', e.value)}
+                        title={e.label}
+                      >
+                        <span className="ce-effect-icon">{e.icon}</span>
+                        <span className="ce-effect-label">{e.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             {form.effect !== 'none' && (

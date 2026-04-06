@@ -5,6 +5,30 @@ import { generateToken } from '../utils/jwt.js';
 
 const router = express.Router();
 
+// Public: get random cards for the floating background
+router.get('/random', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+    const result = await pool.query(
+      `SELECT ct.id, ct.name, ct.description, ct.image_url, ct.rarity,
+              ct.outline_color, ct.background_color, ct.text_color,
+              ct.effect, ct.effect_color, ct.effect_intensity,
+              u.username AS creator_name, u.display_name AS creator_display_name
+       FROM card_templates ct
+       JOIN users u ON ct.creator_id = u.twitch_id
+       JOIN booster_packs bp ON ct.booster_pack_id = bp.id
+       WHERE ct.is_active = true AND bp.is_published = true
+       ORDER BY RANDOM()
+       LIMIT $1`,
+      [limit]
+    );
+    res.json({ cards: result.rows });
+  } catch (error) {
+    console.error('Error fetching random cards:', error);
+    res.status(500).json({ error: 'Failed to fetch random cards' });
+  }
+});
+
 // Get all cards for a streamer (by twitch_id)
 router.get('/streamer/:streamerId', async (req, res) => {
   try {

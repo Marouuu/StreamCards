@@ -1,3 +1,5 @@
+@import './design-tokens.css';
+
 * {
   margin: 0;
   padding: 0;
@@ -29,6 +31,10 @@
 .app-main {
   position: relative;
   z-index: 10;
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .app-header h1 {
@@ -319,7 +325,7 @@
   color: white;
 }
 .nav-more-active {
-  background: rgba(155, 89, 182, 0.15) !important;
+  background: rgba(139, 92, 246, 0.15) !important;
   color: white !important;
 }
 .nav-more-icon {
@@ -437,12 +443,7 @@
   font-size: 0.9rem;
 }
 
-.app-main {
-  flex: 1;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
+/* app-main layout properties consolidated above */
 
 /* ==============================
    HERO SECTION

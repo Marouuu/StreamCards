@@ -45,15 +45,6 @@ function CardPreview({ card, size = 'medium', onClick }) {
           </div>
         )}
 
-        {/* Holographic shimmer overlay */}
-        {effect === 'holographic' && <div className="card-preview__holo" />}
-
-        {/* Shining rays */}
-        {effect === 'shining' && <div className="card-preview__shine" />}
-
-        {/* Shadow / fog effect */}
-        {effect === 'shadow' && <div className="card-preview__shadow" />}
-
         {/* Card content */}
         <div className="card-preview__inner">
           {/* Image area */}
@@ -78,6 +69,11 @@ function CardPreview({ card, size = 'medium', onClick }) {
             {(card.rarity || 'common').toUpperCase().replace('-', ' ')}
           </div>
         </div>
+
+        {/* Effect overlay — rendered ABOVE card content */}
+        {effect !== 'none' && (
+          <div className={`card-preview__effect card-preview__${effect === 'holographic' ? 'holo' : effect === 'shining' ? 'shine' : effect}`} />
+        )}
       </div>
     </div>
   );

@@ -18,28 +18,33 @@
 }
 
 .auctions-back {
-  padding: 0.5rem 1rem;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   color: white;
+  font-size: 1.2rem;
   cursor: pointer;
-  font-size: 0.85rem;
   transition: all 0.2s;
+  outline: none;
 }
-.auctions-back:hover { background: rgba(255,255,255,0.2); }
+.auctions-back:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-1px); }
 
 .auctions-tabs {
   display: flex;
   gap: 4px;
   background: rgba(255,255,255,0.05);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 3px;
 }
 .auctions-tabs button {
   padding: 0.5rem 1.2rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   background: transparent;
   color: rgba(255,255,255,0.6);
   cursor: pointer;
@@ -48,7 +53,7 @@
   transition: all 0.2s;
 }
 .auctions-tabs button.active {
-  background: rgba(255,255,255,0.15);
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white;
 }
 
@@ -90,7 +95,7 @@
   padding: 0.6rem 1rem;
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 10px;
+  border-radius: 12px;
   color: white;
   font-size: 0.85rem;
   outline: none;
@@ -159,11 +164,11 @@
   letter-spacing: 0.5px;
 }
 .rarity-common { color: #a0a0a0; }
-.rarity-uncommon { color: #22c55e; }
-.rarity-rare { color: #3b82f6; }
-.rarity-epic { color: #a855f7; }
-.rarity-legendary { color: #f59e0b; }
-.rarity-ultra-legendary { color: #ef4444; }
+.rarity-uncommon { color: #2ecc40; }
+.rarity-rare { color: #0096ff; }
+.rarity-epic { color: #9600ff; }
+.rarity-legendary { color: #ffd700; }
+.rarity-ultra-legendary { color: #ff00ff; }
 
 .auction-card-price {
   font-weight: 700;
@@ -222,18 +227,18 @@
 .auction-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.8);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 1000;
   padding: 2rem;
 }
 .auction-modal {
   background: rgba(20,20,40,0.98);
   border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 2rem;
   max-width: 800px;
   width: 100%;

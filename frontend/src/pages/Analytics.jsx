@@ -5,12 +5,12 @@ import CardPreview from '../components/CardPreview';
 import './Analytics.css';
 
 const RARITY_COLORS = {
-  common: '#8a8a8a',
-  uncommon: '#2ecc71',
-  rare: '#3498db',
-  epic: '#9b59b6',
-  legendary: '#f1c40f',
-  'ultra-legendary': '#ff0080',
+  common: '#a0a0a0',
+  uncommon: '#2ecc40',
+  rare: '#0096ff',
+  epic: '#9600ff',
+  legendary: '#ffd700',
+  'ultra-legendary': '#ff00ff',
 };
 
 export default function Analytics({ onBack }) {

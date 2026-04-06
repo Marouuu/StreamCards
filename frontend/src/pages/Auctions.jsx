@@ -106,7 +106,7 @@ export default function Auctions({ onBack, onUserUpdate, currentUserId }) {
   return (
     <div className="auctions-page">
       <div className="auctions-header">
-        <button className="auctions-back" onClick={onBack}>&larr; Retour</button>
+        <button className="auctions-back" onClick={onBack}>&larr;</button>
         <h2>Encheres</h2>
         <div className="auctions-tabs">
           <button className={tab === 'browse' ? 'active' : ''} onClick={() => setTab('browse')}>Parcourir</button>

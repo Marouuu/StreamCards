@@ -270,7 +270,7 @@ function useBoosterGeometry() {
       for (let xi = 0; xi <= segsX; xi++) {
         const v = computeVertex(xi, yi, 'front');
         positions.push(v.x, v.y, v.z);
-        uvs.push(xi / segsX, 1 - yi / segsY);
+        uvs.push(xi / segsX, yi / segsY);
       }
     }
     // Front face indices
@@ -292,7 +292,7 @@ function useBoosterGeometry() {
         const v = computeVertex(xi, yi, 'back');
         positions.push(v.x, v.y, v.z);
         // Mirror UV horizontally for back face (like wrapping paper)
-        uvs.push(1 - xi / segsX, 1 - yi / segsY);
+        uvs.push(1 - xi / segsX, yi / segsY);
       }
     }
     // Back face indices (reversed winding)
@@ -313,9 +313,9 @@ function useBoosterGeometry() {
       const vf = computeVertex(0, yi, 'front');
       const vb = computeVertex(0, yi, 'back');
       positions.push(vf.x, vf.y, vf.z);
-      uvs.push(0, 1 - yi / segsY);
+      uvs.push(0, yi / segsY);
       positions.push(vb.x, vb.y, vb.z);
-      uvs.push(0, 1 - yi / segsY);
+      uvs.push(0, yi / segsY);
     }
     for (let yi = 0; yi < segsY; yi++) {
       const a = edgeOffset + yi * 2;
@@ -331,9 +331,9 @@ function useBoosterGeometry() {
       const vf = computeVertex(segsX, yi, 'front');
       const vb = computeVertex(segsX, yi, 'back');
       positions.push(vf.x, vf.y, vf.z);
-      uvs.push(1, 1 - yi / segsY);
+      uvs.push(1, yi / segsY);
       positions.push(vb.x, vb.y, vb.z);
-      uvs.push(1, 1 - yi / segsY);
+      uvs.push(1, yi / segsY);
     }
     for (let yi = 0; yi < segsY; yi++) {
       const a = rightEdgeOffset + yi * 2;
@@ -511,12 +511,9 @@ function BoosterPack({ isOpening, rarity, name, subtitle, imageUrl, colorPrimary
         );
       })}
 
-      {/* Ambient glow */}
-      <pointLight position={[0, 0, 1.5]} intensity={isOpening ? 3 + openProgress * 5 : 0.5} color={glowColor} distance={8} />
-      <mesh position={[0, 0, -0.2]}>
-        <planeGeometry args={[PACK_W + 1, PACK_H + 1]} />
-        <meshBasicMaterial color={glowColor} transparent opacity={isOpening ? 0.1 + openProgress * 0.2 : 0.05} side={THREE.DoubleSide} />
-      </mesh>
+      {/* Ambient glow — point lights only, no visible rectangle */}
+      <pointLight position={[0, 0, 1.5]} intensity={isOpening ? 3 + openProgress * 5 : 0.8} color={glowColor} distance={8} />
+      <pointLight position={[0, 0, -1.5]} intensity={isOpening ? 2 + openProgress * 3 : 0.4} color={glowColor} distance={6} />
 
       {(rarity === 'legendary' || rarity === 'ultra-legendary') && (
         <Sparkles count={40} scale={[4, 5, 2]} size={2} speed={0.5} opacity={isOpening ? 1 : 0.5} color={glowColor} />

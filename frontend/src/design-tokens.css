@@ -1,0 +1,58 @@
+:root {
+  /* Colors - Primary */
+  --color-primary: #8b5cf6;
+  --color-primary-dark: #7c3aed;
+  --color-primary-light: #a78bfa;
+
+  /* Colors - Background */
+  --color-bg: #1a1a2e;
+  --color-bg-light: #2a2a4e;
+
+  /* Colors - Surface */
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-surface-hover: rgba(255, 255, 255, 0.1);
+
+  /* Colors - Border */
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-light: rgba(255, 255, 255, 0.06);
+
+  /* Colors - Text */
+  --color-text: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-muted: rgba(255, 255, 255, 0.4);
+
+  /* Colors - Status */
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Colors - Rarity */
+  --color-rarity-common: #a0a0a0;
+  --color-rarity-uncommon: #2ecc40;
+  --color-rarity-rare: #0096ff;
+  --color-rarity-epic: #9600ff;
+  --color-rarity-legendary: #ffd700;
+  --color-rarity-ultra-legendary: #ff00ff;
+
+  /* Spacing */
+  --page-padding: 2rem;
+  --page-max-width: 1200px;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.3);
+
+  /* Z-indices */
+  --z-background: 0;
+  --z-content: 10;
+  --z-header: 100;
+  --z-modal-overlay: 1000;
+  --z-modal: 1001;
+  --z-toast: 2000;
+}

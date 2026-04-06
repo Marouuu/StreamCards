@@ -14,12 +14,16 @@
 .profile-top h2 { color: white; margin: 0; }
 .profile-back {
   width: 40px; height: 40px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white; font-size: 1.2rem;
-  cursor: pointer; display: flex;
-  align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; color: white;
+  font-size: 1.2rem; cursor: pointer;
+  transition: all 0.2s; outline: none;
+}
+.profile-back:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
 }
 
 /* Skeletons */
@@ -47,7 +51,7 @@
 .profile-avatar {
   width: 80px; height: 80px;
   border-radius: 50%; object-fit: cover;
-  border: 3px solid rgba(155,89,182,0.4);
+  border: 3px solid rgba(139,92,246,0.4);
 }
 .profile-user-info h3 {
   color: white; margin: 0;
@@ -59,7 +63,7 @@
 }
 .profile-streamer-badge {
   display: inline-block; margin-left: 8px;
-  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white; font-size: 0.65rem;
   padding: 2px 8px; border-radius: 6px;
   font-weight: 700; vertical-align: middle;
@@ -95,7 +99,7 @@
   outline: none; resize: vertical;
   font-family: inherit;
 }
-.profile-bio-edit textarea:focus { border-color: rgba(155,89,182,0.5); }
+.profile-bio-edit textarea:focus { border-color: rgba(139,92,246,0.5); }
 
 .profile-bio-actions {
   display: flex; align-items: center;
@@ -115,7 +119,7 @@
   background: rgba(255,255,255,0.1); color: white;
 }
 .profile-bio-save {
-  background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;
 }
 
 /* Stats */
@@ -153,13 +157,13 @@
 }
 .profile-showcase-header h3 { color: white; margin: 0; }
 .profile-showcase-edit {
-  background: rgba(155,89,182,0.2);
-  border: 1px solid rgba(155,89,182,0.3);
+  background: rgba(139,92,246,0.2);
+  border: 1px solid rgba(139,92,246,0.3);
   color: #bb77d6; border-radius: 8px;
   padding: 6px 14px; font-size: 0.8rem;
   font-weight: 600; cursor: pointer;
 }
-.profile-showcase-edit:hover { background: rgba(155,89,182,0.3); }
+.profile-showcase-edit:hover { background: rgba(139,92,246,0.3); }
 
 .profile-showcase-empty {
   text-align: center; padding: 2rem;
@@ -184,12 +188,12 @@
   border-radius: 6px; font-weight: 600;
   text-transform: capitalize;
 }
-.rarity-common { background: rgba(150,150,150,0.2); color: #aaa; }
-.rarity-uncommon { background: rgba(46,204,113,0.2); color: #2ecc71; }
-.rarity-rare { background: rgba(52,152,219,0.2); color: #3498db; }
-.rarity-epic { background: rgba(155,89,182,0.2); color: #9b59b6; }
-.rarity-legendary { background: rgba(241,196,15,0.2); color: #f1c40f; }
-.rarity-ultra-legendary { background: rgba(255,0,128,0.2); color: #ff0080; }
+.rarity-common { background: rgba(160,160,160,0.2); color: #a0a0a0; }
+.rarity-uncommon { background: rgba(46,204,64,0.2); color: #2ecc40; }
+.rarity-rare { background: rgba(0,150,255,0.2); color: #0096ff; }
+.rarity-epic { background: rgba(150,0,255,0.2); color: #9600ff; }
+.rarity-legendary { background: rgba(255,215,0,0.2); color: #ffd700; }
+.rarity-ultra-legendary { background: rgba(255,0,255,0.2); color: #ff00ff; }
 
 /* Showcase editor */
 .showcase-editor-grid {
