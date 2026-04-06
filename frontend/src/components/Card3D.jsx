@@ -147,152 +147,156 @@ function useCardBackTexture(rarity, creatorName) {
   }, [rarity, creatorName]);
 }
 
-// Draws a full trading card face (border, image with cover-fit, name, rarity) onto a canvas
-function useCardFrontTexture(imageUrl, card) {
-  const [texture, setTexture] = useState(null);
+// Helper: draw full card design onto a canvas context
+function drawCardDesign(ctx, W, H, card, img) {
+  const rarity = card?.rarity || 'common';
+  const outlineColor = card?.outline_color || RARITY_COLORS[rarity] || '#a0a0a0';
+  const bgColor = card?.background_color || '#1a1a2e';
+  const textColor = card?.text_color || '#ffffff';
+  const name = card?.name || 'Card';
+  const description = card?.description || '';
+  const creatorName = card?.creator_display_name || card?.creator_name || '';
 
-  useEffect(() => {
-    const rarity = card?.rarity || 'common';
-    const outlineColor = card?.outline_color || RARITY_COLORS[rarity] || '#a0a0a0';
-    const bgColor = card?.background_color || '#1a1a2e';
-    const textColor = card?.text_color || '#ffffff';
-    const name = card?.name || 'Card';
-    const description = card?.description || '';
-    const creatorName = card?.creator_display_name || card?.creator_name || '';
-    const url = imageUrl || card?.image_url;
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, W, H);
 
-    const W = 512, H = 716;
-    const canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = outlineColor;
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.roundRect(5, 5, W - 10, H - 10, 16);
+  ctx.stroke();
 
-    function drawCard(img) {
-      // Background
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = outlineColor + '40';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(14, 14, W - 28, H - 28, 12);
+  ctx.stroke();
 
-      // Outer border
-      ctx.strokeStyle = outlineColor;
-      ctx.lineWidth = 10;
-      ctx.beginPath();
-      ctx.roundRect(5, 5, W - 10, H - 10, 16);
-      ctx.stroke();
+  const imgX = 24, imgY = 24;
+  const imgW = W - 48, imgH = H * 0.6;
 
-      // Inner glow border
-      ctx.strokeStyle = outlineColor + '40';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.roundRect(14, 14, W - 28, H - 28, 12);
-      ctx.stroke();
-
-      // Image area
-      const imgX = 24, imgY = 24;
-      const imgW = W - 48, imgH = H * 0.6;
-
-      if (img) {
-        const imgAspect = img.width / img.height;
-        const areaAspect = imgW / imgH;
-        let sx = 0, sy = 0, sw = img.width, sh = img.height;
-        if (imgAspect > areaAspect) {
-          sw = img.height * areaAspect;
-          sx = (img.width - sw) / 2;
-        } else {
-          sh = img.width / areaAspect;
-          sy = (img.height - sh) / 2;
-        }
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(imgX, imgY, imgW, imgH, 8);
-        ctx.clip();
-        ctx.drawImage(img, sx, sy, sw, sh, imgX, imgY, imgW, imgH);
-        ctx.restore();
-      } else {
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.beginPath();
-        ctx.roundRect(imgX, imgY, imgW, imgH, 8);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        ctx.font = '64px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('\uD83C\uDFB4', W / 2, imgY + imgH / 2);
-      }
-
-      // Image border
-      ctx.strokeStyle = outlineColor + '60';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(imgX, imgY, imgW, imgH, 8);
-      ctx.stroke();
-
-      // Card name
-      const nameY = imgY + imgH + 16;
-      ctx.fillStyle = textColor;
-      ctx.font = 'bold 28px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      let displayName = name;
-      while (ctx.measureText(displayName).width > imgW - 20 && displayName.length > 3) {
-        displayName = displayName.slice(0, -1);
-      }
-      if (displayName !== name) displayName += '...';
-      ctx.fillText(displayName, W / 2, nameY);
-
-      // Description
-      if (description) {
-        ctx.fillStyle = textColor + '99';
-        ctx.font = '14px Arial';
-        let desc = description;
-        while (ctx.measureText(desc).width > imgW - 20 && desc.length > 3) {
-          desc = desc.slice(0, -1);
-        }
-        if (desc !== description) desc += '...';
-        ctx.fillText(desc, W / 2, nameY + 36);
-      }
-
-      // Creator tag
-      if (creatorName) {
-        ctx.font = 'bold 13px Arial';
-        const tw = ctx.measureText(creatorName).width + 16;
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.beginPath();
-        ctx.roundRect(imgX + 6, imgY + 6, tw, 22, 6);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(creatorName, imgX + 14, imgY + 17);
-        ctx.textAlign = 'center';
-      }
-
-      // Rarity badge
-      const badgeY = H - 50;
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillRect(20, badgeY, W - 40, 34);
-      ctx.fillStyle = outlineColor;
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(rarity.toUpperCase().replace('-', ' '), W / 2, badgeY + 17);
-
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.needsUpdate = true;
-      setTexture(tex);
-    }
-
-    if (url) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => drawCard(img);
-      img.onerror = () => drawCard(null);
-      img.src = url;
+  if (img) {
+    const imgAspect = img.width / img.height;
+    const areaAspect = imgW / imgH;
+    let sx = 0, sy = 0, sw = img.width, sh = img.height;
+    if (imgAspect > areaAspect) {
+      sw = img.height * areaAspect;
+      sx = (img.width - sw) / 2;
     } else {
-      drawCard(null);
+      sh = img.width / areaAspect;
+      sy = (img.height - sh) / 2;
     }
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(imgX, imgY, imgW, imgH, 8);
+    ctx.clip();
+    ctx.drawImage(img, sx, sy, sw, sh, imgX, imgY, imgW, imgH);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.roundRect(imgX, imgY, imgW, imgH, 8);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.font = '64px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('\uD83C\uDFB4', W / 2, imgY + imgH / 2);
+  }
+
+  ctx.strokeStyle = outlineColor + '60';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(imgX, imgY, imgW, imgH, 8);
+  ctx.stroke();
+
+  const nameY = imgY + imgH + 16;
+  ctx.fillStyle = textColor;
+  ctx.font = 'bold 28px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  let displayName = name;
+  while (ctx.measureText(displayName).width > imgW - 20 && displayName.length > 3) {
+    displayName = displayName.slice(0, -1);
+  }
+  if (displayName !== name) displayName += '...';
+  ctx.fillText(displayName, W / 2, nameY);
+
+  if (description) {
+    ctx.fillStyle = textColor + '99';
+    ctx.font = '14px Arial';
+    let desc = description;
+    while (ctx.measureText(desc).width > imgW - 20 && desc.length > 3) {
+      desc = desc.slice(0, -1);
+    }
+    if (desc !== description) desc += '...';
+    ctx.fillText(desc, W / 2, nameY + 36);
+  }
+
+  if (creatorName) {
+    ctx.font = 'bold 13px Arial';
+    const tw = ctx.measureText(creatorName).width + 16;
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.beginPath();
+    ctx.roundRect(imgX + 6, imgY + 6, tw, 22, 6);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(creatorName, imgX + 14, imgY + 17);
+    ctx.textAlign = 'center';
+  }
+
+  const badgeY = H - 50;
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(20, badgeY, W - 40, 34);
+  ctx.fillStyle = outlineColor;
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(rarity.toUpperCase().replace('-', ' '), W / 2, badgeY + 17);
+}
+
+// Creates texture synchronously (never null), then updates when image loads
+function useCardFrontTexture(imageUrl, card) {
+  const canvasRef = useRef(null);
+  const textureRef = useRef(null);
+
+  // Create canvas + texture synchronously on first call
+  if (!canvasRef.current) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 716;
+    canvasRef.current = canvas;
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    textureRef.current = tex;
+  }
+
+  // Draw card design synchronously (without image) so texture is never blank
+  useMemo(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    drawCardDesign(ctx, 512, 716, card, null);
+    textureRef.current.needsUpdate = true;
+  }, [card?.name, card?.rarity, card?.outline_color, card?.background_color, card?.text_color]);
+
+  // Load image asynchronously, then redraw with it
+  useEffect(() => {
+    const url = imageUrl || card?.image_url;
+    if (!url) return;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      drawCardDesign(ctx, 512, 716, card, img);
+      textureRef.current.needsUpdate = true;
+    };
+    img.src = url;
   }, [imageUrl, card?.image_url, card?.name, card?.rarity, card?.outline_color, card?.background_color]);
 
-  return texture;
+  return textureRef.current;
 }
 
 function Card3D({

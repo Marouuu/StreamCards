@@ -1,4 +1,4 @@
-import { Suspense, useState, useRef, useCallback, useEffect } from 'react';
+import { Suspense, useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
@@ -191,165 +191,154 @@ function useCardBackTexture(rarity) {
   })[0];
 }
 
-// Draws a full card face (border, image, name, rarity) onto a canvas texture
-function useCardFrontTexture(card) {
-  const [texture, setTexture] = useState(null);
-  const cardRef = useRef(card);
-  cardRef.current = card;
+// Helper: draw full card design onto a canvas context
+function drawCardDesign(ctx, W, H, card, img) {
+  const rarity = card?.rarity || 'common';
+  const outlineColor = card?.outline_color || RARITY_COLORS[rarity] || '#a0a0a0';
+  const bgColor = card?.background_color || '#1a1a2e';
+  const textColor = card?.text_color || '#ffffff';
+  const name = card?.name || 'Card';
+  const description = card?.description || '';
+  const creatorName = card?.creator_display_name || card?.creator_name || '';
 
-  useEffect(() => {
-    const c = cardRef.current;
-    const rarity = c?.rarity || 'common';
-    const outlineColor = c?.outline_color || RARITY_COLORS[rarity] || '#a0a0a0';
-    const bgColor = c?.background_color || '#1a1a2e';
-    const textColor = c?.text_color || '#ffffff';
-    const name = c?.name || 'Card';
-    const description = c?.description || '';
-    const creatorName = c?.creator_display_name || c?.creator_name || '';
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, W, H);
 
-    const W = 512, H = 716;
-    const canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = outlineColor;
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.roundRect(5, 5, W - 10, H - 10, 16);
+  ctx.stroke();
 
-    function drawCard(img) {
-      // Background
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = outlineColor + '40';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(14, 14, W - 28, H - 28, 12);
+  ctx.stroke();
 
-      // Outer border (rarity colored)
-      const borderW = 10;
-      ctx.strokeStyle = outlineColor;
-      ctx.lineWidth = borderW;
-      ctx.beginPath();
-      ctx.roundRect(borderW / 2, borderW / 2, W - borderW, H - borderW, 16);
-      ctx.stroke();
+  const imgX = 24, imgY = 24;
+  const imgW = W - 48, imgH = H * 0.6;
 
-      // Inner border glow
-      ctx.strokeStyle = outlineColor + '40';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.roundRect(borderW + 4, borderW + 4, W - (borderW + 4) * 2, H - (borderW + 4) * 2, 12);
-      ctx.stroke();
-
-      // Image area
-      const imgX = 24, imgY = 24;
-      const imgW = W - 48, imgH = H * 0.6;
-
-      if (img) {
-        // Draw image with cover-fit (crop to fill)
-        const imgAspect = img.width / img.height;
-        const areaAspect = imgW / imgH;
-        let sx = 0, sy = 0, sw = img.width, sh = img.height;
-        if (imgAspect > areaAspect) {
-          // Image wider than area — crop sides
-          sw = img.height * areaAspect;
-          sx = (img.width - sw) / 2;
-        } else {
-          // Image taller — crop top/bottom
-          sh = img.width / areaAspect;
-          sy = (img.height - sh) / 2;
-        }
-        // Clip to rounded rect
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(imgX, imgY, imgW, imgH, 8);
-        ctx.clip();
-        ctx.drawImage(img, sx, sy, sw, sh, imgX, imgY, imgW, imgH);
-        ctx.restore();
-      } else {
-        // No image placeholder
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.beginPath();
-        ctx.roundRect(imgX, imgY, imgW, imgH, 8);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        ctx.font = '64px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('\uD83C\uDFB4', W / 2, imgY + imgH / 2);
-      }
-
-      // Image border
-      ctx.strokeStyle = outlineColor + '60';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(imgX, imgY, imgW, imgH, 8);
-      ctx.stroke();
-
-      // Card name area
-      const nameY = imgY + imgH + 16;
-      ctx.fillStyle = textColor;
-      ctx.font = 'bold 28px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      // Truncate name if too long
-      let displayName = name;
-      while (ctx.measureText(displayName).width > imgW - 20 && displayName.length > 3) {
-        displayName = displayName.slice(0, -1);
-      }
-      if (displayName !== name) displayName += '...';
-      ctx.fillText(displayName, W / 2, nameY);
-
-      // Description (small, under name)
-      if (description) {
-        ctx.fillStyle = textColor + '99';
-        ctx.font = '14px Arial';
-        const maxDescW = imgW - 20;
-        let desc = description;
-        while (ctx.measureText(desc).width > maxDescW && desc.length > 3) {
-          desc = desc.slice(0, -1);
-        }
-        if (desc !== description) desc += '...';
-        ctx.fillText(desc, W / 2, nameY + 36);
-      }
-
-      // Creator tag (top-left over image)
-      if (creatorName) {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        const tagW = ctx.measureText(creatorName).width;
-        ctx.font = 'bold 13px Arial';
-        const tw = ctx.measureText(creatorName).width + 16;
-        ctx.beginPath();
-        ctx.roundRect(imgX + 6, imgY + 6, tw, 22, 6);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(creatorName, imgX + 14, imgY + 17);
-        ctx.textAlign = 'center';
-      }
-
-      // Rarity badge (bottom)
-      const badgeY = H - 50;
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillRect(20, badgeY, W - 40, 34);
-      ctx.fillStyle = outlineColor;
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(rarity.toUpperCase().replace('-', ' '), W / 2, badgeY + 17);
-
-      // Create texture
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.needsUpdate = true;
-      setTexture(tex);
-    }
-
-    // Load image then draw
-    if (c?.image_url) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => drawCard(img);
-      img.onerror = () => drawCard(null);
-      img.src = c.image_url;
+  if (img) {
+    const imgAspect = img.width / img.height;
+    const areaAspect = imgW / imgH;
+    let sx = 0, sy = 0, sw = img.width, sh = img.height;
+    if (imgAspect > areaAspect) {
+      sw = img.height * areaAspect;
+      sx = (img.width - sw) / 2;
     } else {
-      drawCard(null);
+      sh = img.width / areaAspect;
+      sy = (img.height - sh) / 2;
     }
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(imgX, imgY, imgW, imgH, 8);
+    ctx.clip();
+    ctx.drawImage(img, sx, sy, sw, sh, imgX, imgY, imgW, imgH);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.roundRect(imgX, imgY, imgW, imgH, 8);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.font = '64px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('\uD83C\uDFB4', W / 2, imgY + imgH / 2);
+  }
+
+  ctx.strokeStyle = outlineColor + '60';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(imgX, imgY, imgW, imgH, 8);
+  ctx.stroke();
+
+  const nameY = imgY + imgH + 16;
+  ctx.fillStyle = textColor;
+  ctx.font = 'bold 28px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  let displayName = name;
+  while (ctx.measureText(displayName).width > imgW - 20 && displayName.length > 3) {
+    displayName = displayName.slice(0, -1);
+  }
+  if (displayName !== name) displayName += '...';
+  ctx.fillText(displayName, W / 2, nameY);
+
+  if (description) {
+    ctx.fillStyle = textColor + '99';
+    ctx.font = '14px Arial';
+    let desc = description;
+    while (ctx.measureText(desc).width > imgW - 20 && desc.length > 3) {
+      desc = desc.slice(0, -1);
+    }
+    if (desc !== description) desc += '...';
+    ctx.fillText(desc, W / 2, nameY + 36);
+  }
+
+  if (creatorName) {
+    ctx.font = 'bold 13px Arial';
+    const tw = ctx.measureText(creatorName).width + 16;
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.beginPath();
+    ctx.roundRect(imgX + 6, imgY + 6, tw, 22, 6);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(creatorName, imgX + 14, imgY + 17);
+    ctx.textAlign = 'center';
+  }
+
+  const badgeY = H - 50;
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(20, badgeY, W - 40, 34);
+  ctx.fillStyle = outlineColor;
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(rarity.toUpperCase().replace('-', ' '), W / 2, badgeY + 17);
+}
+
+// Creates texture synchronously (never null), then updates when image loads
+function useCardFrontTexture(card) {
+  const canvasRef = useRef(null);
+  const textureRef = useRef(null);
+
+  if (!canvasRef.current) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 716;
+    canvasRef.current = canvas;
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    textureRef.current = tex;
+  }
+
+  // Draw card design synchronously (without image) so texture is never blank
+  useMemo(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    drawCardDesign(ctx, 512, 716, card, null);
+    textureRef.current.needsUpdate = true;
+  }, [card?.name, card?.rarity, card?.outline_color, card?.background_color, card?.text_color]);
+
+  // Load image asynchronously, then redraw with it
+  useEffect(() => {
+    if (!card?.image_url) return;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      drawCardDesign(ctx, 512, 716, card, img);
+      textureRef.current.needsUpdate = true;
+    };
+    img.src = card.image_url;
   }, [card?.image_url, card?.name, card?.rarity, card?.outline_color, card?.background_color]);
 
-  return texture;
+  return textureRef.current;
 }
 
 // No shared geometry needed — using planes + box for reliable texture mapping
