@@ -10,6 +10,16 @@ import shopRoutes from './routes/shop.routes.js';
 import userRoutes from './routes/user.routes.js';
 import packsRoutes from './routes/packs.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import marketplaceRoutes from './routes/marketplace.routes.js';
+import leaderboardRoutes from './routes/leaderboard.routes.js';
+import rewardsRoutes from './routes/rewards.routes.js';
+import tradeRoutes from './routes/trade.routes.js';
+import notificationsRoutes from './routes/notifications.routes.js';
+import profileRoutes from './routes/profile.routes.js';
+import collectionProgressRoutes from './routes/collection-progress.routes.js';
+import historyRoutes from './routes/history.routes.js';
+import achievementsRoutes from './routes/achievements.routes.js';
+import analyticsRoutes from './routes/analytics.routes.js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -22,8 +32,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+}));
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
@@ -48,6 +61,16 @@ app.use('/api/shop', shopRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/packs', packsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/rewards', rewardsRoutes);
+app.use('/api/trades', tradeRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/collection-progress', collectionProgressRoutes);
+app.use('/api/history', historyRoutes);
+app.use('/api/achievements', achievementsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Start server
 app.listen(PORT, () => {

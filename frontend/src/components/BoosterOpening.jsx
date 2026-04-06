@@ -133,11 +133,11 @@ function BoosterOpening({ booster, onClose, cards }) {
     // After shake, play tear sound
     setTimeout(() => playTearSound(ctx), 800);
 
-    // Cards start flying out
+    // Cards start flying out — longer pause for suspense
     setTimeout(() => {
       setPhase('cards-flying');
       setFlyingCardIndex(0);
-    }, 2000);
+    }, 2800);
   };
 
   // Stagger flying cards one by one
@@ -151,13 +151,13 @@ function BoosterOpening({ booster, onClose, cards }) {
 
       const timer = setTimeout(() => {
         setFlyingCardIndex(prev => prev + 1);
-      }, 500);
+      }, 900);
       return () => clearTimeout(timer);
     } else {
       // All cards revealed, show recap
       const ctx = getAudioCtx();
       playFanfareSound(ctx);
-      const timer = setTimeout(() => setPhase('recap'), 600);
+      const timer = setTimeout(() => setPhase('recap'), 1000);
       return () => clearTimeout(timer);
     }
   }, [phase, flyingCardIndex, cards, getAudioCtx]);
@@ -177,7 +177,9 @@ function BoosterOpening({ booster, onClose, cards }) {
   return (
     <div className="booster-opening-overlay">
       <div className="booster-opening-container">
-        <button className="close-opening-btn" onClick={onClose}>✕</button>
+        {phase === 'idle' && (
+          <button className="close-opening-btn" onClick={onClose}>&#10005;</button>
+        )}
 
         {phase !== 'recap' && (
           <h2 className="opening-title">{booster?.name || 'Booster Pack'}</h2>

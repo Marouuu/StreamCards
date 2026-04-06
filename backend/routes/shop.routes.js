@@ -2,6 +2,7 @@ import express from 'express';
 import { generateToken } from '../utils/jwt.js';
 import { pool } from '../config/database.js';
 import { authenticate } from '../middleware/auth.js';
+import { checkAchievements } from '../utils/achievements.js';
 
 const router = express.Router();
 
@@ -143,30 +144,26 @@ router.post('/boosters/:boosterId/purchase', authenticate, async (req, res) => {
       return res.status(404).json({ error: 'Booster not found' });
     }
 
-    // Get coins from DB
-    let userCoins;
-    try {
-      const userResult = await pool.query('SELECT coins FROM users WHERE twitch_id = $1', [twitchId]);
-      userCoins = userResult.rows.length > 0 ? userResult.rows[0].coins : (req.user.coins || 0);
-    } catch {
-      userCoins = req.user.coins || 0;
-    }
-
-    if (userCoins < booster.price) {
-      return res.status(400).json({ error: 'Insufficient coins' });
-    }
-
     // Draw cards using weighted probability
-    const cardsPerOpen = booster.cards_per_open || 5;
+    const cardsPerOpen = Math.min(Math.max(booster.cards_per_open || 5, 1), 10);
     const drawnCards = await drawCards(booster.id, booster.rarity_weights, cardsPerOpen);
 
-    const newCoins = userCoins - booster.price;
-
-    // Persist everything in a transaction
+    // Persist everything in a transaction with row lock
     let openingId = null;
+    let newCoins;
     try {
       await pool.query('BEGIN');
 
+      // Lock user row and check coins inside transaction
+      const userResult = await pool.query('SELECT coins FROM users WHERE twitch_id = $1 FOR UPDATE', [twitchId]);
+      const userCoins = userResult.rows.length > 0 ? userResult.rows[0].coins : 0;
+
+      if (userCoins < booster.price) {
+        await pool.query('ROLLBACK');
+        return res.status(400).json({ error: 'Insufficient coins' });
+      }
+
+      newCoins = userCoins - booster.price;
       await pool.query('UPDATE users SET coins = $1 WHERE twitch_id = $2', [newCoins, twitchId]);
 
       const openResult = await pool.query(
@@ -250,6 +247,9 @@ router.post('/boosters/:boosterId/purchase', authenticate, async (req, res) => {
       newToken,
       message: `Vous avez obtenu ${drawnCards.length} carte(s) !`,
     });
+
+    // Check achievements in background
+    checkAchievements(twitchId).catch(() => {});
   } catch (error) {
     console.error('Error purchasing booster:', error);
     res.status(500).json({ error: 'Failed to purchase booster' });

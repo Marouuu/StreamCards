@@ -1,16 +1,17 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../config/api';
 import { getToken } from '../utils/auth';
+import { useToast } from '../components/Toast';
 import CardPreview from '../components/CardPreview';
+import CardDetailModal from '../components/CardDetailModal';
 import './Collection.css';
 
 function Collection({ onBack, onUserUpdate }) {
   const [cards, setCards] = useState([]);
   const [stats, setStats] = useState({ totalCards: 0, uniqueCards: 0, duplicates: 0 });
   const [loading, setLoading] = useState(true);
-  const [recycling, setRecycling] = useState(null); // card id being recycled
+  const [recycling, setRecycling] = useState(null);
   const [recyclingAll, setRecyclingAll] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
   const [filters, setFilters] = useState({
     rarity: 'all',
     streamer: 'all',
@@ -20,6 +21,8 @@ function Collection({ onBack, onUserUpdate }) {
   });
   const [groupBy, setGroupBy] = useState('all');
   const [stackDuplicates, setStackDuplicates] = useState(true);
+  const [selectedCard, setSelectedCard] = useState(null);
+  const toast = useToast();
 
   const loadCollection = useCallback(async () => {
     try {
@@ -52,17 +55,16 @@ function Collection({ onBack, onUserUpdate }) {
     setRecycling(cardId);
     try {
       const data = await api.recycleCard(cardId);
-      setMessage({ type: 'success', text: `Carte recyclée ! +${data.coinsEarned} coins` });
+      toast.success(`Carte recyclee ! +${data.coinsEarned} coins`);
       if (onUserUpdate) {
         const userData = await api.getCurrentUser();
         if (userData) onUserUpdate(userData);
       }
       await loadCollection();
     } catch (error) {
-      setMessage({ type: 'error', text: error.message });
+      toast.error(error.message);
     } finally {
       setRecycling(null);
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     }
   };
 
@@ -73,17 +75,16 @@ function Collection({ onBack, onUserUpdate }) {
     setRecyclingAll(true);
     try {
       const data = await api.recycleAll();
-      setMessage({ type: 'success', text: `${data.recycledCount} doublon(s) recyclé(s) ! +${data.coinsEarned} coins` });
+      toast.success(`${data.recycledCount} doublon(s) recycle(s) ! +${data.coinsEarned} coins`);
       if (onUserUpdate) {
         const userData = await api.getCurrentUser();
         if (userData) onUserUpdate(userData);
       }
       await loadCollection();
     } catch (error) {
-      setMessage({ type: 'error', text: error.message });
+      toast.error(error.message);
     } finally {
       setRecyclingAll(false);
-      setTimeout(() => setMessage({ type: '', text: '' }), 4000);
     }
   };
 
@@ -177,9 +178,29 @@ function Collection({ onBack, onUserUpdate }) {
 
   if (loading) {
     return (
-      <div className="collection-loading">
-        <div className="loading-spinner"></div>
-        <p>Chargement de la collection...</p>
+      <div className="collection-page">
+        <div className="collection-header">
+          {onBack && <button className="collection-back-btn" onClick={onBack}>&larr;</button>}
+          <h1>Ma Collection</h1>
+          <div></div>
+        </div>
+        <div className="collection-stats-bar">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="stat-card">
+              <div className="skeleton-line skeleton-line--lg" style={{width: '60px', height: '28px'}}></div>
+              <div className="skeleton-line skeleton-line--sm" style={{width: '80px'}}></div>
+            </div>
+          ))}
+        </div>
+        <div className="collection-skeleton-grid">
+          {[1,2,3,4,5,6,7,8].map(i => (
+            <div key={i} className="skeleton-card">
+              <div className="skeleton-card-img"></div>
+              <div className="skeleton-line skeleton-line--md"></div>
+              <div className="skeleton-line skeleton-line--sm"></div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -232,13 +253,6 @@ function Collection({ onBack, onUserUpdate }) {
           >
             {recyclingAll ? 'Recyclage...' : `Tout recycler (+${stats.duplicates * 10} coins)`}
           </button>
-        </div>
-      )}
-
-      {/* Message */}
-      {message.text && (
-        <div className={`collection-message ${message.type}`}>
-          {message.text}
         </div>
       )}
 
@@ -328,9 +342,18 @@ function Collection({ onBack, onUserUpdate }) {
       {/* Card grid */}
       <div className="collection-content">
         {displayCards.length === 0 ? (
-          <div className="collection-empty">
-            <p>Aucune carte dans votre collection</p>
-            <p className="hint">Achetez des boosters pour commencer !</p>
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="8" height="12" rx="1.5"/>
+                <rect x="14" y="2" width="8" height="12" rx="1.5" strokeDasharray="3 2"/>
+                <rect x="8" y="10" width="8" height="12" rx="1.5" strokeDasharray="3 2"/>
+                <path d="M6 6h0.01"/>
+                <path d="M6 10h0.01"/>
+              </svg>
+            </div>
+            <p className="empty-state-title">Votre collection est vide</p>
+            <p className="empty-state-hint">Ouvrez des boosters dans le shop pour commencer votre collection !</p>
           </div>
         ) : (
           groupedCards.map(group => (
@@ -346,7 +369,7 @@ function Collection({ onBack, onUserUpdate }) {
               )}
               <div className="collection-grid">
                 {group.cards.map((card, idx) => (
-                  <div key={`${card.id}-${idx}`} className="collection-card-wrapper">
+                  <div key={`${card.id}-${idx}`} className="collection-card-wrapper" onClick={() => setSelectedCard(card)}>
                     {card.stackCount > 1 && (
                       <span className="stack-count">x{card.stackCount}</span>
                     )}
@@ -373,6 +396,10 @@ function Collection({ onBack, onUserUpdate }) {
           ))
         )}
       </div>
+
+      {selectedCard && (
+        <CardDetailModal card={selectedCard} onClose={() => setSelectedCard(null)} />
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { api } from '../config/api';
 import { getToken, setToken } from '../utils/auth';
+import { useToast } from '../components/Toast';
 import BoosterOpening from '../components/BoosterOpening';
 import BoosterMini3D from '../components/BoosterMini3D';
 import './Shop.css';
@@ -10,8 +11,8 @@ function Shop({ onBack, onUserUpdate }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(null);
-  const [message, setMessage] = useState({ type: '', text: '' });
   const [openingBooster, setOpeningBooster] = useState(null);
+  const toast = useToast();
   const [openedCards, setOpenedCards] = useState([]);
   const [streamerFilter, setStreamerFilter] = useState('all');
 
@@ -75,13 +76,11 @@ function Shop({ onBack, onUserUpdate }) {
     if (!booster) return;
 
     if (user.coins < booster.price) {
-      setMessage({ type: 'error', text: 'Pas assez de coins !' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      toast.error('Pas assez de coins !');
       return;
     }
 
     setPurchasing(boosterId);
-    setMessage({ type: '', text: '' });
 
     try {
       const token = getToken();
@@ -115,13 +114,11 @@ function Shop({ onBack, onUserUpdate }) {
         setOpeningBooster(booster);
       } else {
         const errorMessage = data.error || data.message || 'Erreur lors de l\'achat';
-        setMessage({ type: 'error', text: errorMessage });
-        setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error('Error purchasing booster:', error);
-      setMessage({ type: 'error', text: error.message || 'Erreur de connexion au serveur' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+      toast.error(error.message || 'Erreur de connexion au serveur');
     } finally {
       setPurchasing(null);
     }
@@ -129,9 +126,23 @@ function Shop({ onBack, onUserUpdate }) {
 
   if (loading) {
     return (
-      <div className="shop-loading">
-        <div className="loading-spinner"></div>
-        <p>Chargement de la boutique...</p>
+      <div className="shop">
+        <div className="shop-header">
+          {onBack && <button className="shop-back-btn" onClick={onBack}>&larr;</button>}
+          <h1>Boutique</h1>
+          <div></div>
+        </div>
+        <div className="shop-skeleton-grid">
+          {[1,2,3].map(i => (
+            <div key={i} className="shop-skeleton-card">
+              <div className="skeleton-line" style={{width: '120px', height: '16px'}}></div>
+              <div className="skeleton-rect" style={{width: '100%', aspectRatio: '3/4'}}></div>
+              <div className="skeleton-line" style={{width: '80%'}}></div>
+              <div className="skeleton-line" style={{width: '60%'}}></div>
+              <div className="skeleton-line" style={{width: '100%', height: '44px', borderRadius: '10px'}}></div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -143,10 +154,12 @@ function Shop({ onBack, onUserUpdate }) {
           booster={openingBooster}
           cards={openedCards}
           onClose={() => {
+            const count = openedCards.length;
             setOpeningBooster(null);
             setOpenedCards([]);
-            setMessage({ type: 'success', text: `Achat réussi ! Vous avez obtenu ${openedCards.length} carte(s).` });
-            setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+            if (count > 0) {
+              toast.success(`${count} carte(s) ajoutee(s) a votre collection !`);
+            }
           }}
         />
       )}
@@ -178,12 +191,6 @@ function Shop({ onBack, onUserUpdate }) {
                 {s.name}
               </button>
             ))}
-          </div>
-        )}
-
-        {message.text && (
-          <div className={`shop-message ${message.type}`}>
-            {message.text}
           </div>
         )}
 
@@ -241,8 +248,16 @@ function Shop({ onBack, onUserUpdate }) {
                 </div>
               ))
             ) : (
-              <div className="no-boosters">
-                <p>Aucun booster disponible pour le moment</p>
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                    <path d="M8 21h8"/>
+                    <path d="M12 17v4"/>
+                  </svg>
+                </div>
+                <p className="empty-state-title">Aucun booster disponible</p>
+                <p className="empty-state-hint">Les streamers doivent creer et publier des boosters.</p>
               </div>
             )}
           </div>

@@ -27,12 +27,10 @@ router.get('/streamer/:streamerId', async (req, res) => {
 // Get user's collection
 router.get('/collection/:userId', authenticate, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.params.userId === 'me' ? req.user.twitchId : req.params.userId;
 
-    // Users can only view their own collection
-    if (req.user.twitchId !== userId) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
+    // Allow viewing other users' collections for trading
+    const isOwn = req.user.twitchId === userId;
 
     const result = await pool.query(
       `SELECT

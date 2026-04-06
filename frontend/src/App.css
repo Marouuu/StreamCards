@@ -23,7 +23,7 @@
   padding: 1.5rem 2rem;
   background: transparent;
   position: relative;
-  z-index: 10;
+  z-index: 100;
 }
 
 .app-main {
@@ -122,28 +122,6 @@
   box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.packs-btn {
-  padding: 0.6rem 1.5rem;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  outline: none;
-}
-
-.packs-btn:hover {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
-}
-
-.packs-btn:focus { outline: none; border: none; }
-
 .collection-btn {
   padding: 0.6rem 1.5rem;
   background: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #0e7490 100%);
@@ -166,9 +144,9 @@
 
 .collection-btn:focus { outline: none; border: none; }
 
-.admin-btn {
+.market-btn {
   padding: 0.6rem 1.5rem;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -180,35 +158,135 @@
   outline: none;
 }
 
-.admin-btn:hover {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 50%, #dc2626 100%);
+.market-btn:hover {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5);
 }
 
-.admin-btn:focus { outline: none; border: none; }
+.market-btn:focus { outline: none; border: none; }
 
-.logout-btn {
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+.trades-btn {
+  padding: 0.6rem 1.5rem;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  outline: none;
+}
+.trades-btn:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+}
+.trades-btn:focus { outline: none; border: none; }
+
+/* ── "More" dropdown ── */
+.nav-more-wrapper {
+  position: relative;
+}
+.nav-more-btn {
+  padding: 0.6rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.nav-more-btn:hover, .nav-more-open {
+  background: rgba(255,255,255,0.2);
+}
+.nav-more-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: rgba(20, 20, 40, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
+  padding: 6px;
+  z-index: 1000;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  animation: moreSlideIn 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+@keyframes moreSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.nav-more-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.7);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  outline: none;
+  transition: all 0.15s;
+  text-align: left;
+}
+.nav-more-dropdown button:hover {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+.nav-more-active {
+  background: rgba(155, 89, 182, 0.15) !important;
+  color: white !important;
+}
+.nav-more-icon {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.nav-more-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 4px 8px;
+}
+.nav-more-logout {
+  color: rgba(231, 76, 60, 0.8) !important;
+}
+.nav-more-logout:hover {
+  color: #e74c3c !important;
+  background: rgba(231, 76, 60, 0.1) !important;
 }
 
-.logout-btn:focus {
-  outline: none;
+/* Active nav indicator */
+.nav-active {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  position: relative;
 }
 
-.logout-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+.nav-active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: white;
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,255,255,0.5);
 }
 
 .twitch-login-btn {

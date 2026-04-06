@@ -14,10 +14,11 @@
 
 .card-preview[onclick] { cursor: pointer; }
 
-/* Sizes */
+/* Sizes — trading card ratio (≈ 2.5 × 3.5 inches = 5:7) */
+.card-preview--tiny { width: 65px; }
 .card-preview--small { width: 120px; }
-.card-preview--medium { width: 180px; }
-.card-preview--large { width: 260px; }
+.card-preview--medium { width: 170px; }
+.card-preview--large { width: 240px; }
 
 /* Border = outline glow */
 .card-preview__border {
@@ -30,6 +31,9 @@
     0 0 8px color-mix(in srgb, var(--outline-color) 40%, transparent),
     0 2px 12px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s, box-shadow 0.2s;
+  aspect-ratio: 5 / 7;
+  display: flex;
+  flex-direction: column;
 }
 
 .card-preview:hover .card-preview__border {
@@ -72,6 +76,10 @@
   color: #9146ff;
 }
 
+.card-preview--tiny .card-preview__streamer,
+.card-preview--tiny .card-preview__desc,
+.card-preview--tiny .card-preview__name { display: none; }
+
 .card-preview--small .card-preview__streamer {
   font-size: 0.45em;
   padding: 1px 4px;
@@ -100,11 +108,14 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Image */
 .card-preview__image {
-  aspect-ratio: 4 / 3;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.3);
 }
@@ -293,21 +304,102 @@
   75% { transform: translate(2%, -4%) scale(1.02); }
 }
 
-/* Legendary+ extra glow on outline */
-.card-preview.rarity-legendary .card-preview__border,
-.card-preview.rarity-ultra-legendary .card-preview__border {
-  box-shadow:
-    0 0 12px color-mix(in srgb, var(--outline-color) 50%, transparent),
-    0 0 30px color-mix(in srgb, var(--outline-color) 20%, transparent),
-    0 2px 12px rgba(0, 0, 0, 0.4);
+/* ── Animated borders by rarity ── */
+
+/* Rare: subtle shimmer pulse */
+.card-preview.rarity-rare .card-preview__border {
+  animation: rare-pulse 3s ease-in-out infinite;
+}
+@keyframes rare-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 6px color-mix(in srgb, var(--outline-color) 30%, transparent),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 14px color-mix(in srgb, var(--outline-color) 60%, transparent),
+      0 0 24px color-mix(in srgb, var(--outline-color) 20%, transparent),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+  }
 }
 
+/* Epic: rotating glow */
+.card-preview.rarity-epic .card-preview__border {
+  animation: epic-glow 4s ease-in-out infinite;
+}
+@keyframes epic-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 8px color-mix(in srgb, var(--outline-color) 40%, transparent),
+      4px 0 18px color-mix(in srgb, var(--outline-color) 25%, transparent),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  25% {
+    box-shadow:
+      0 0 8px color-mix(in srgb, var(--outline-color) 40%, transparent),
+      0 4px 18px color-mix(in srgb, var(--outline-color) 30%, transparent),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 8px color-mix(in srgb, var(--outline-color) 40%, transparent),
+      -4px 0 18px color-mix(in srgb, var(--outline-color) 25%, transparent),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  75% {
+    box-shadow:
+      0 0 8px color-mix(in srgb, var(--outline-color) 40%, transparent),
+      0 -4px 18px color-mix(in srgb, var(--outline-color) 30%, transparent),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Legendary: intense breathing glow + shimmer */
+.card-preview.rarity-legendary .card-preview__border {
+  animation: legendary-breathe 2.5s ease-in-out infinite;
+}
+@keyframes legendary-breathe {
+  0%, 100% {
+    box-shadow:
+      0 0 10px color-mix(in srgb, var(--outline-color) 50%, transparent),
+      0 0 25px color-mix(in srgb, var(--outline-color) 20%, transparent),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+    border-color: var(--outline-color);
+  }
+  50% {
+    box-shadow:
+      0 0 18px color-mix(in srgb, var(--outline-color) 70%, transparent),
+      0 0 40px color-mix(in srgb, var(--outline-color) 30%, transparent),
+      0 0 60px color-mix(in srgb, var(--outline-color) 10%, transparent),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+    border-color: color-mix(in srgb, var(--outline-color) 80%, white);
+  }
+}
+
+/* Ultra-legendary: rainbow cycling border + intense glow */
 .card-preview.rarity-ultra-legendary .card-preview__border {
   border-image: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #9400d3, #ff0000) 1;
-  animation: rainbow-border 3s linear infinite;
+  animation: rainbow-border 3s linear infinite, ultra-glow 2s ease-in-out infinite;
 }
 
 @keyframes rainbow-border {
   0% { filter: hue-rotate(0deg); }
   100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes ultra-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 15px rgba(255, 0, 128, 0.4),
+      0 0 35px rgba(128, 0, 255, 0.2),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 25px rgba(255, 0, 128, 0.6),
+      0 0 50px rgba(128, 0, 255, 0.3),
+      0 0 80px rgba(255, 200, 0, 0.15),
+      0 2px 12px rgba(0, 0, 0, 0.4);
+  }
 }

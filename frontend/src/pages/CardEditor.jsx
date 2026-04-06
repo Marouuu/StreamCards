@@ -212,7 +212,7 @@ function CardEditor({ packId, packName, onBack }) {
             </label>
             <label>
               <span>Image URL</span>
-              <input type="url" value={form.image_url} onChange={e => handleChange('image_url', e.target.value)} placeholder="https://..." />
+              <input type="url" value={form.image_url} onChange={e => handleChange('image_url', e.target.value)} placeholder="https://... (PNG, JPG, GIF, WebP)" />
             </label>
           </div>
 

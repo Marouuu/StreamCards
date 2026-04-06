@@ -1,0 +1,572 @@
+.marketplace-page {
+  padding: 2rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mp-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  color: white;
+}
+
+/* Header */
+.mp-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mp-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+.mp-back-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.mp-header h1 {
+  color: white;
+  margin: 0;
+  font-size: 2rem;
+  flex: 1;
+}
+
+.mp-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mp-total {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+.mp-sell-btn {
+  padding: 0.6rem 1.5rem;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.mp-sell-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+}
+
+/* Message */
+.mp-message {
+  padding: 0.75rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  animation: mpSlide 0.3s ease;
+}
+
+.mp-message.success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+}
+
+.mp-message.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+@keyframes mpSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tabs */
+.mp-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mp-tab {
+  padding: 0.7rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mp-tab:hover { color: rgba(255, 255, 255, 0.8); }
+.mp-tab.active { color: white; border-bottom-color: #22c55e; }
+
+.mp-tab-badge {
+  background: #22c55e;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+/* Controls */
+.mp-controls {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.2rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.mp-search {
+  padding: 0.55rem 0.9rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.85rem;
+  outline: none;
+  min-width: 180px;
+  flex: 1;
+  font-family: inherit;
+}
+
+.mp-search::placeholder { color: rgba(255, 255, 255, 0.4); }
+.mp-search:focus { border-color: rgba(34, 197, 94, 0.5); }
+
+.mp-select {
+  padding: 0.55rem 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+}
+
+.mp-select option { background: #2a2a3e; color: white; }
+
+/* Grid */
+.mp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.mp-listing-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  transition: all 0.25s ease;
+}
+
+.mp-listing-card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.mp-listing-card.sold {
+  opacity: 0.6;
+}
+
+.mp-listing-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  text-align: center;
+  width: 100%;
+}
+
+.mp-listing-name {
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.mp-listing-seller {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+}
+
+.mp-seller-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+.mp-listing-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  margin-top: 0.2rem;
+}
+
+.mp-price-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.mp-price-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.mp-buy-btn {
+  width: 100%;
+  padding: 0.6rem;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.mp-buy-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+.mp-buy-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.mp-cancel-btn {
+  width: 100%;
+  padding: 0.6rem;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  color: #f87171;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.mp-cancel-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.mp-cancel-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.mp-sold-badge {
+  padding: 0.4rem 1rem;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  color: #4ade80;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.mp-sold-to {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.7rem;
+}
+
+.mp-section-title {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin: 1rem 0 0.5rem;
+}
+
+/* Empty */
+.mp-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mp-hint {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* Sell Modal */
+.mp-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.mp-modal {
+  background: linear-gradient(135deg, #1a1a2e, #16162a);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.mp-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mp-modal-header h2 {
+  color: white;
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.mp-modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+.mp-modal-close:hover { background: rgba(255, 255, 255, 0.2); }
+
+.mp-modal-body {
+  padding: 1.5rem;
+}
+
+.mp-modal-loading {
+  padding: 3rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mp-modal-hint {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+.mp-cards-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.8rem;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.mp-pick-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.mp-pick-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.mp-pick-name {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.68rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Confirm sell view */
+.mp-confirm-sell {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.mp-sell-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.mp-sell-form h3 {
+  color: white;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.mp-sell-rarity {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 6px;
+  align-self: flex-start;
+}
+
+.mp-sell-rarity.rarity-common { background: rgba(160, 160, 160, 0.2); color: #a0a0a0; }
+.mp-sell-rarity.rarity-uncommon { background: rgba(46, 204, 64, 0.2); color: #2ecc40; }
+.mp-sell-rarity.rarity-rare { background: rgba(0, 150, 255, 0.2); color: #0096ff; }
+.mp-sell-rarity.rarity-epic { background: rgba(150, 0, 255, 0.2); color: #9b59b6; }
+.mp-sell-rarity.rarity-legendary { background: rgba(255, 215, 0, 0.2); color: #ffd700; }
+.mp-sell-rarity.rarity-ultra-legendary { background: linear-gradient(135deg, rgba(255, 0, 64, 0.2), rgba(255, 0, 255, 0.2)); color: #ff69b4; }
+
+.mp-price-label-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.mp-price-label-input span {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.82rem;
+}
+
+.mp-price-label-input input {
+  padding: 0.6rem 0.8rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  outline: none;
+  width: 120px;
+}
+
+.mp-price-label-input input:focus { border-color: rgba(34, 197, 94, 0.5); }
+
+.mp-sell-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.mp-back-pick {
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.mp-back-pick:hover { background: rgba(255, 255, 255, 0.12); }
+
+.mp-confirm-btn {
+  padding: 0.6rem 1.5rem;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.mp-confirm-btn:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+.mp-confirm-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .mp-controls {
+    flex-direction: column;
+  }
+
+  .mp-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .mp-confirm-sell {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mp-header {
+    flex-wrap: wrap;
+  }
+}

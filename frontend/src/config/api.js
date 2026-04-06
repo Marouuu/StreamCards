@@ -385,6 +385,369 @@ export const api = {
     return await res.json();
   },
 
+  // Marketplace: browse listings
+  getMarketplaceListings: async (params = {}) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const qs = new URLSearchParams(params).toString();
+    const res = await fetch(`${API_BASE_URL}/marketplace${qs ? '?' + qs : ''}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Marketplace: my listings
+  getMyListings: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/marketplace/my-listings`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Marketplace: list a card for sale
+  listCard: async (userCardId, price) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/marketplace/list`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ userCardId, price }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Marketplace: buy a card
+  buyCard: async (listingId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/marketplace/buy/${listingId}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    const data = await res.json();
+    if (data.newToken) localStorage.setItem('streamcards_token', data.newToken);
+    return data;
+  },
+
+  // Marketplace: cancel listing
+  cancelListing: async (listingId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/marketplace/cancel/${listingId}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Rewards
+  getRewards: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/rewards`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  claimDaily: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/rewards/claim-daily`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    const data = await res.json();
+    if (data.newToken) localStorage.setItem('streamcards_token', data.newToken);
+    return data;
+  },
+
+  claimQuest: async (questId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/rewards/claim-quest/${questId}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    const data = await res.json();
+    if (data.newToken) localStorage.setItem('streamcards_token', data.newToken);
+    return data;
+  },
+
+  // Leaderboard
+  getLeaderboard: async (category = 'collection') => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/leaderboard?category=${category}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Trades
+  getTrades: async (status) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const qs = status ? `?status=${status}` : '';
+    const res = await fetch(`${API_BASE_URL}/trades${qs}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  createTrade: async (receiverId, senderCardIds, receiverCardIds, message) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/trades`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ receiverId, senderCardIds, receiverCardIds, message }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  acceptTrade: async (tradeId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/trades/${tradeId}/accept`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  declineTrade: async (tradeId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/trades/${tradeId}/decline`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  cancelTrade: async (tradeId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/trades/${tradeId}/cancel`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // User search
+  searchUsers: async (q) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/user/search?q=${encodeURIComponent(q)}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) return { users: [] };
+    return await res.json();
+  },
+
+  // Notifications
+  getNotifications: async (unreadOnly = false) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const qs = unreadOnly ? '?unreadOnly=true' : '';
+    const res = await fetch(`${API_BASE_URL}/notifications${qs}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  markNotificationRead: async (id) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+  },
+
+  markAllNotificationsRead: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    await fetch(`${API_BASE_URL}/notifications/read-all`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+  },
+
+  // Profile
+  getProfile: async (userId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/profile/${userId}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      let msg = 'Failed to load profile';
+      try { const err = await res.json(); msg = err.error || msg; } catch {}
+      throw new Error(msg);
+    }
+    return await res.json();
+  },
+
+  updateShowcase: async (cards) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/profile/showcase`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ cards }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  updateBio: async (bio) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/profile/bio`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ bio }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Collection Progress
+  getCollectionProgress: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/collection-progress`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  getCreatorProgress: async (creatorId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/collection-progress/${creatorId}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  claimCollectionReward: async (rewardId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/collection-progress/${rewardId}/claim`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    const data = await res.json();
+    if (data.newToken) localStorage.setItem('streamcards_token', data.newToken);
+    return data;
+  },
+
+  // Pack History
+  getPackHistory: async (page = 1) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/history?page=${page}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  getOpeningDetail: async (openingId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/history/${openingId}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Get user's cards (for trade card picker)
+  getUserCards: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/cards/collection/${encodeURIComponent('me')}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Get another user's cards (for requesting in trade)
+  getOtherUserCards: async (userId) => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/cards/collection/${userId}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  // Achievements
+  getAchievements: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/achievements`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  checkAchievements: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/achievements/check`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
+  getUserAchievements: async (userId) => {
+    const res = await fetch(`${API_BASE_URL}/achievements/user/${userId}`);
+    if (!res.ok) return { achievements: [] };
+    return await res.json();
+  },
+
+  // Streamer Analytics
+  getAnalytics: async () => {
+    const token = localStorage.getItem('streamcards_token');
+    if (!token) throw new Error('Not authenticated');
+    const res = await fetch(`${API_BASE_URL}/analytics`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed'); }
+    return await res.json();
+  },
+
   // Recycle all duplicates at once
   recycleAll: async () => {
     const token = localStorage.getItem('streamcards_token');

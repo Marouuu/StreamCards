@@ -51,35 +51,33 @@ router.get('/followed', authenticate, async (req, res) => {
   }
 });
 
-// Add coins (development route) — persists to DB
+// Add coins (admin only)
 router.post('/add-coins', authenticate, async (req, res) => {
   try {
-    const { amount = 1000000 } = req.body;
     const twitchId = req.user.twitchId;
 
-    // Update coins in database
-    let newCoins;
-    try {
-      const result = await pool.query(
-        `UPDATE users SET coins = coins + $1 WHERE twitch_id = $2 RETURNING coins`,
-        [amount, twitchId]
-      );
-      if (result.rows.length > 0) {
-        newCoins = result.rows[0].coins;
-        // Log the transaction
-        await pool.query(
-          `INSERT INTO transactions (user_id, type, amount, balance_after, description)
-           VALUES ($1, 'admin', $2, $3, 'Dev: add coins')`,
-          [twitchId, amount, newCoins]
-        );
-      } else {
-        // User not in DB yet, fall back to JWT
-        newCoins = (req.user.coins || 0) + amount;
-      }
-    } catch {
-      // DB unavailable, fall back to JWT
-      newCoins = (req.user.coins || 0) + amount;
+    // Admin check
+    const adminCheck = await pool.query('SELECT is_admin FROM users WHERE twitch_id = $1', [twitchId]);
+    if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
+      return res.status(403).json({ error: 'Admin only' });
     }
+
+    const { amount } = req.body;
+    if (!Number.isInteger(amount) || amount <= 0 || amount > 10000000) {
+      return res.status(400).json({ error: 'Amount must be an integer between 1 and 10,000,000' });
+    }
+
+    const result = await pool.query(
+      `UPDATE users SET coins = coins + $1 WHERE twitch_id = $2 RETURNING coins`,
+      [amount, twitchId]
+    );
+    const newCoins = result.rows[0].coins;
+
+    await pool.query(
+      `INSERT INTO transactions (user_id, type, amount, balance_after, description)
+       VALUES ($1, 'admin', $2, $3, 'Admin: add coins')`,
+      [twitchId, amount, newCoins]
+    );
 
     const newToken = generateToken(
       {
@@ -153,6 +151,30 @@ router.get('/streamer-status', authenticate, async (req, res) => {
   } catch (error) {
     console.error('Error fetching streamer status:', error);
     res.status(500).json({ error: 'Failed to fetch status' });
+  }
+});
+
+// GET /api/user/search?q=... — search users for trade partner picker
+router.get('/search', authenticate, async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) {
+      return res.json({ users: [] });
+    }
+
+    const result = await pool.query(
+      `SELECT twitch_id, username, display_name, profile_image_url
+       FROM users
+       WHERE (username ILIKE $1 OR display_name ILIKE $1)
+         AND twitch_id != $2
+       ORDER BY display_name
+       LIMIT 20`,
+      [`%${q}%`, req.user.twitchId]
+    );
+
+    res.json({ users: result.rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

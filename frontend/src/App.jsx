@@ -1,18 +1,48 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import Background3D from './components/Background3D'
+import { ToastProvider, useToast } from './components/Toast'
 import Dashboard from './pages/Dashboard'
 import Shop from './pages/Shop'
 import PackManager from './pages/PackManager'
 import Collection from './pages/Collection'
 import AdminPanel from './pages/AdminPanel'
+import Marketplace from './pages/Marketplace'
+import Leaderboard from './pages/Leaderboard'
+import DailyRewards from './pages/DailyRewards'
+import Trades from './pages/Trades'
+import Profile from './pages/Profile'
+import PackHistory from './pages/PackHistory'
+import Achievements from './pages/Achievements'
+import Analytics from './pages/Analytics'
+import NotificationBell from './components/NotificationBell'
 import { api } from './config/api'
 import { getToken, setToken, removeToken } from './utils/auth'
 
 function App() {
+  return (
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
+  )
+}
+
+function AppInner() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState('dashboard')
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const moreRef = useRef(null)
+  const toast = useToast()
+
+  // Close "more" dropdown on outside click
+  useEffect(() => {
+    function handleClick(e) {
+      if (moreRef.current && !moreRef.current.contains(e.target)) setMoreMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   // Check for OAuth callback token
   useEffect(() => {
@@ -26,7 +56,7 @@ function App() {
       fetchUser()
     } else if (error) {
       console.error('OAuth error:', error)
-      alert(`Login failed: ${error}`)
+      toast.error(`Connexion echouee : ${error}`)
       window.history.replaceState({}, document.title, window.location.pathname)
       setLoading(false)
     } else {
@@ -71,9 +101,9 @@ function App() {
       await api.requestStreamer()
       const userData = await api.getCurrentUser()
       if (userData) setUser(userData)
-      alert('Votre demande de streamer a ete envoyee ! Un admin va la valider.')
+      toast.success('Votre demande de streamer a ete envoyee ! Un admin va la valider.')
     } catch (error) {
-      alert(error.message)
+      toast.error(error.message)
     }
   }
 
@@ -101,25 +131,62 @@ function App() {
               <button className="coins-btn">
                 <span className="coin-icon">&#128176;</span> {(user.coins || 0).toLocaleString()}
               </button>
-              <button className="shop-btn" onClick={() => setCurrentPage('shop')}>
+              <NotificationBell />
+              <button className={`shop-btn${currentPage === 'shop' ? ' nav-active' : ''}`} onClick={() => setCurrentPage('shop')}>
                 SHOP
               </button>
-              {user.isStreamer && (
-                <button className="packs-btn" onClick={() => setCurrentPage('pack-manager')}>
-                  MES PACKS
-                </button>
-              )}
-              <button className="collection-btn" onClick={() => setCurrentPage('collection')}>
+              <button className={`collection-btn${currentPage === 'collection' ? ' nav-active' : ''}`} onClick={() => setCurrentPage('collection')}>
                 COLLECTION
               </button>
-              {user.isAdmin && (
-                <button className="admin-btn" onClick={() => setCurrentPage('admin')}>
-                  ADMIN
-                </button>
-              )}
-              <button onClick={handleLogout} className="logout-btn">
-                Logout
+              <button className={`market-btn${currentPage === 'marketplace' ? ' nav-active' : ''}`} onClick={() => setCurrentPage('marketplace')}>
+                MARCHE
               </button>
+              <button className={`trades-btn${currentPage === 'trades' ? ' nav-active' : ''}`} onClick={() => setCurrentPage('trades')}>
+                ECHANGES
+              </button>
+              <div className="nav-more-wrapper" ref={moreRef}>
+                <button className={`nav-more-btn${moreMenuOpen ? ' nav-more-open' : ''}`} onClick={() => setMoreMenuOpen(!moreMenuOpen)}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+                </button>
+                {moreMenuOpen && (
+                  <div className="nav-more-dropdown">
+                    {user.isStreamer && (
+                      <button className={currentPage === 'pack-manager' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('pack-manager'); setMoreMenuOpen(false); }}>
+                        <span className="nav-more-icon">&#128230;</span> Mes Packs
+                      </button>
+                    )}
+                    <button className={currentPage === 'leaderboard' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('leaderboard'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#127942;</span> Classement
+                    </button>
+                    <button className={currentPage === 'rewards' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('rewards'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#127873;</span> Quetes
+                    </button>
+                    <button className={currentPage === 'profile' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('profile'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#128100;</span> Profil
+                    </button>
+                    <button className={currentPage === 'history' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('history'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#128218;</span> Historique
+                    </button>
+                    <button className={currentPage === 'achievements' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('achievements'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#127942;</span> Succes
+                    </button>
+                    {user.isStreamer && (
+                      <button className={currentPage === 'analytics' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('analytics'); setMoreMenuOpen(false); }}>
+                        <span className="nav-more-icon">&#128202;</span> Analytics
+                      </button>
+                    )}
+                    {user.isAdmin && (
+                      <button className={currentPage === 'admin' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('admin'); setMoreMenuOpen(false); }}>
+                        <span className="nav-more-icon">&#9881;</span> Admin
+                      </button>
+                    )}
+                    <div className="nav-more-divider" />
+                    <button onClick={handleLogout} className="nav-more-logout">
+                      <span className="nav-more-icon">&#128682;</span> Deconnexion
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : null}
         </nav>
@@ -136,6 +203,22 @@ function App() {
             <PackManager onBack={() => setCurrentPage('dashboard')} />
           ) : currentPage === 'collection' ? (
             <Collection onBack={() => setCurrentPage('dashboard')} onUserUpdate={setUser} />
+          ) : currentPage === 'marketplace' ? (
+            <Marketplace onBack={() => setCurrentPage('dashboard')} onUserUpdate={setUser} currentUserId={user.twitchId} />
+          ) : currentPage === 'leaderboard' ? (
+            <Leaderboard onBack={() => setCurrentPage('dashboard')} />
+          ) : currentPage === 'rewards' ? (
+            <DailyRewards onBack={() => setCurrentPage('dashboard')} onUserUpdate={setUser} />
+          ) : currentPage === 'trades' ? (
+            <Trades onBack={() => setCurrentPage('dashboard')} currentUserId={user.twitchId} />
+          ) : currentPage === 'profile' ? (
+            <Profile onBack={() => setCurrentPage('dashboard')} userId={user.twitchId} isOwnProfile={true} />
+          ) : currentPage === 'history' ? (
+            <PackHistory onBack={() => setCurrentPage('dashboard')} />
+          ) : currentPage === 'achievements' ? (
+            <Achievements onBack={() => setCurrentPage('dashboard')} />
+          ) : currentPage === 'analytics' && user.isStreamer ? (
+            <Analytics onBack={() => setCurrentPage('dashboard')} />
           ) : currentPage === 'admin' && user.isAdmin ? (
             <AdminPanel onBack={() => setCurrentPage('dashboard')} />
           ) : (
@@ -143,6 +226,7 @@ function App() {
               user={user}
               onStreamerRequest={handleStreamerRequest}
               onUserUpdate={setUser}
+              onNavigate={setCurrentPage}
             />
           )
         ) : (

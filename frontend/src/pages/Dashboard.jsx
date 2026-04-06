@@ -1,21 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { api } from '../config/api';
 import { getToken } from '../utils/auth';
+import { useToast } from '../components/Toast';
+import BoosterMini3D from '../components/BoosterMini3D';
 import './Dashboard.css';
 
-function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
+function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavigate }) {
   const [user, setUser] = useState(initialUser);
   const [followedChannels, setFollowedChannels] = useState([]);
-  const [cards, setCards] = useState([]);
+  const [boosters, setBoosters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [channelSort, setChannelSort] = useState('watched');
   const [addingCoins, setAddingCoins] = useState(false);
-
-  const [filters, setFilters] = useState({
-    rarity: 'all',
-    boosterType: 'all',
-    streamer: 'all',
-  });
+  const [streamerSearch, setStreamerSearch] = useState('');
+  const toast = useToast();
 
   useEffect(() => {
     const loadData = async () => {
@@ -24,68 +22,65 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
         setUser(userData);
         setLoading(false);
         const token = getToken();
-        
+
         // Fetch followed channels
         try {
-          console.log('Dashboard: Fetching followed channels...');
           const channelsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/user/followed`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
-          console.log('Dashboard: Channels response status:', channelsResponse.status);
           if (channelsResponse.ok) {
             const channelsData = await channelsResponse.json();
-            console.log('Dashboard: Channels data:', channelsData);
             setFollowedChannels(channelsData.channels || []);
-          } else {
-            const errorText = await channelsResponse.text();
-            console.error('Dashboard: Channels error:', errorText);
           }
         } catch (error) {
-          console.error('Dashboard: Error fetching followed channels:', error);
+          console.error('Error fetching followed channels:', error);
         }
 
-        // Fetch user collection (using Twitch ID)
+        // Fetch boosters from shop
         try {
-          console.log('Dashboard: Fetching collection for user:', userData.twitchId);
-          const collectionResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/cards/collection/${userData.twitchId}`, {
+          const boostersResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/shop/boosters`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
-          console.log('Dashboard: Collection response status:', collectionResponse.status);
-          if (collectionResponse.ok) {
-            const collectionData = await collectionResponse.json();
-            console.log('Dashboard: Collection data:', collectionData);
-            setCards(collectionData.cards || []);
-          } else {
-            const errorText = await collectionResponse.text();
-            console.error('Dashboard: Collection error:', errorText);
-            setCards([]);
+          if (boostersResponse.ok) {
+            const boostersData = await boostersResponse.json();
+            setBoosters(boostersData.boosters || []);
           }
         } catch (error) {
-          console.error('Dashboard: Error fetching collection:', error);
-          setCards([]);
+          console.error('Error fetching boosters:', error);
         }
       } else {
-        console.log('Dashboard: No user data, setting loading to false');
         setLoading(false);
       }
     };
     loadData();
   }, []);
 
-  const filteredCards = cards.filter(card => {
-    if (filters.rarity !== 'all' && card.rarity !== filters.rarity) return false;
-    if (filters.boosterType !== 'all' && card.boosterType !== filters.boosterType) return false;
-    if (filters.streamer !== 'all' && card.streamer_id !== parseInt(filters.streamer)) return false;
-    return true;
-  });
+  // Group boosters by streamer
+  const boostersByStreamer = useMemo(() => {
+    const groups = new Map();
+    for (const b of boosters) {
+      const key = b.creator_id || b.creator_name || 'unknown';
+      if (!groups.has(key)) {
+        groups.set(key, {
+          id: key,
+          name: b.creator_display_name || b.creator_name || 'Inconnu',
+          image: b.creator_image,
+          boosters: [],
+        });
+      }
+      groups.get(key).boosters.push(b);
+    }
+    return [...groups.values()];
+  }, [boosters]);
 
-  const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
-  const uniqueStreamers = [...new Map(cards.map(card => [card.streamer_id, { id: card.streamer_id, name: card.streamer_display_name || card.streamer_name }])).values()];
+  const filteredGroups = useMemo(() => {
+    if (!streamerSearch.trim()) return boostersByStreamer;
+    const q = streamerSearch.toLowerCase();
+    return boostersByStreamer.filter(g => g.name.toLowerCase().includes(q));
+  }, [boostersByStreamer, streamerSearch]);
 
-  // Trier les chaînes selon le filtre sélectionné
   const handleAddCoins = async () => {
     if (addingCoins) return;
-
     setAddingCoins(true);
     try {
       const result = await api.addCoins(1000000);
@@ -94,10 +89,10 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
         setUser(userData);
         if (onUserUpdate) onUserUpdate(userData);
       }
-      alert(`${result.addedCoins.toLocaleString()} coins ajoutes ! Total: ${result.newCoins.toLocaleString()}`);
+      toast.success(`${result.addedCoins.toLocaleString()} coins ajoutes ! Total: ${result.newCoins.toLocaleString()}`);
     } catch (error) {
       console.error('Error adding coins:', error);
-      alert('Erreur lors de l\'ajout de coins');
+      toast.error('Erreur lors de l\'ajout de coins');
     } finally {
       setAddingCoins(false);
     }
@@ -105,11 +100,7 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
 
   const sortedChannels = [...followedChannels].sort((a, b) => {
     if (channelSort === 'watched') {
-      // Trier par date de suivi (les plus récemment suivies en premier)
-      // Cela indique les chaînes que l'utilisateur regarde le plus
-      const dateA = new Date(a.followed_at || 0);
-      const dateB = new Date(b.followed_at || 0);
-      return dateB - dateA; // Plus récent en premier
+      return new Date(b.followed_at || 0) - new Date(a.followed_at || 0);
     } else if (channelSort === 'viewers') {
       return (b.viewer_count || 0) - (a.viewer_count || 0);
     } else {
@@ -119,9 +110,34 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
 
   if (loading) {
     return (
-      <div className="dashboard-loading">
-        <div className="loading-spinner"></div>
-        <p>Chargement...</p>
+      <div className="dashboard">
+        <div className="dashboard-left">
+          <div className="skeleton skeleton-profile">
+            <div className="skeleton-circle"></div>
+            <div className="skeleton-line skeleton-line--lg"></div>
+            <div className="skeleton-line skeleton-line--sm"></div>
+          </div>
+          <div className="skeleton skeleton-channels">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="skeleton-channel">
+                <div className="skeleton-circle skeleton-circle--sm"></div>
+                <div className="skeleton-line skeleton-line--md"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="dashboard-right">
+          <div className="skeleton-line skeleton-line--lg" style={{width: '200px', marginBottom: '1.5rem'}}></div>
+          <div className="skeleton skeleton-boosters">
+            {[1,2,3].map(i => (
+              <div key={i} className="skeleton-booster">
+                <div className="skeleton-rect"></div>
+                <div className="skeleton-line skeleton-line--md"></div>
+                <div className="skeleton-line skeleton-line--sm"></div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -132,8 +148,8 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
         {/* Profil utilisateur */}
         <div className="user-profile-card">
           {user?.profileImageUrl && (
-            <img 
-              src={user.profileImageUrl} 
+            <img
+              src={user.profileImageUrl}
               alt={user.displayName || user.username}
               className="profile-avatar"
             />
@@ -142,24 +158,18 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
           <div className="user-stats">
             <div className="stat-item">
               <span className="stat-label">Coins</span>
-              <span className="stat-value">{user?.coins || 0}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">Cartes</span>
-              <span className="stat-value">{cards.length}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">Streamers</span>
-              <span className="stat-value">{uniqueStreamers.length}</span>
+              <span className="stat-value">{(user?.coins || 0).toLocaleString()}</span>
             </div>
           </div>
-          <button
-            className="add-coins-btn"
-            onClick={handleAddCoins}
-            disabled={addingCoins}
-          >
-            {addingCoins ? 'Ajout...' : '+1M Coins (Dev)'}
-          </button>
+          {user?.isAdmin && (
+            <button
+              className="add-coins-btn"
+              onClick={handleAddCoins}
+              disabled={addingCoins}
+            >
+              {addingCoins ? 'Ajout...' : '+1M Coins (Admin)'}
+            </button>
+          )}
         </div>
 
         {/* Streamer status banner */}
@@ -219,13 +229,13 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
         {/* Chaînes suivies */}
         <div className="followed-channels-card">
           <div className="channels-header">
-            <h3>Chaînes suivies</h3>
-            <select 
-              value={channelSort} 
+            <h3>Chaines suivies</h3>
+            <select
+              value={channelSort}
               onChange={(e) => setChannelSort(e.target.value)}
               className="channel-sort-select"
             >
-              <option value="watched">Mes chaînes (plus regardées)</option>
+              <option value="watched">Plus regardees</option>
               <option value="viewers">Plus populaires</option>
               <option value="name">Par nom</option>
             </select>
@@ -234,8 +244,8 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
             {sortedChannels.length > 0 ? (
               sortedChannels.slice(0, 10).map((channel) => (
                 <div key={channel.id} className={`channel-item ${channel.is_live ? 'live' : ''}`}>
-                  <img 
-                    src={channel.profile_image_url || channel.thumbnail_url} 
+                  <img
+                    src={channel.profile_image_url || channel.thumbnail_url}
                     alt={channel.display_name}
                     className="channel-avatar"
                   />
@@ -243,7 +253,7 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
                     <span className="channel-name">{channel.display_name}</span>
                     {channel.is_live ? (
                       <span className="channel-viewers live-indicator">
-                        🔴 LIVE • {channel.viewer_count || 0} viewers
+                        EN DIRECT - {channel.viewer_count || 0} viewers
                       </span>
                     ) : (
                       channel.viewer_count !== undefined && (
@@ -254,94 +264,88 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate }) {
                 </div>
               ))
             ) : (
-              <p className="no-channels">Aucune chaîne suivie pour le moment</p>
+              <p className="no-channels">Aucune chaine suivie pour le moment</p>
             )}
           </div>
         </div>
       </div>
 
       <div className="dashboard-right">
-        {/* Filtres */}
-        <div className="collection-filters">
-          <h3>Ma Collection</h3>
-          <div className="filters-row">
-            <div className="filter-group">
-              <label>Rareté</label>
-              <select 
-                value={filters.rarity} 
-                onChange={(e) => setFilters({...filters, rarity: e.target.value})}
-              >
-                <option value="all">Toutes</option>
-                {rarities.map(rarity => (
-                  <option key={rarity} value={rarity}>
-                    {rarity.charAt(0).toUpperCase() + rarity.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label>Type de Booster</label>
-              <select 
-                value={filters.boosterType} 
-                onChange={(e) => setFilters({...filters, boosterType: e.target.value})}
-              >
-                <option value="all">Tous</option>
-                <option value="standard">Standard</option>
-                <option value="premium">Premium</option>
-                <option value="legendary">Légendaire</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label>Streamer</label>
-              <select 
-                value={filters.streamer} 
-                onChange={(e) => setFilters({...filters, streamer: e.target.value})}
-              >
-                <option value="all">Tous</option>
-                {uniqueStreamers.map(streamer => (
-                  <option key={streamer.id} value={streamer.id}>
-                    {streamer.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+        <div className="dash-shop-header">
+          <h3 className="dash-shop-title">Boosters disponibles</h3>
+          <input
+            type="text"
+            className="dash-search"
+            placeholder="Rechercher un streamer..."
+            value={streamerSearch}
+            onChange={(e) => setStreamerSearch(e.target.value)}
+          />
         </div>
 
-        {/* Collection de cartes */}
-        <div className="cards-grid">
-          {filteredCards.length > 0 ? (
-            filteredCards.map((card) => (
-              <div key={card.id} className={`card-item rarity-${card.rarity}`}>
-                <div className="card-image">
-                  {card.imageUrl ? (
-                    <img src={card.imageUrl} alt={card.name} />
-                  ) : (
-                    <div className="card-placeholder">{card.name}</div>
-                  )}
-                </div>
-                <div className="card-info">
-                  <h4>{card.name}</h4>
-                  <p className="card-streamer">{card.streamer_display_name || card.streamer_name}</p>
-                  <span className={`card-rarity rarity-${card.rarity}`}>
-                    {card.rarity}
-                  </span>
-                </div>
+        {filteredGroups.length > 0 ? (
+          filteredGroups.map(group => (
+            <div key={group.id} className="dash-streamer-group">
+              <div className="dash-streamer-header">
+                {group.image && (
+                  <img src={group.image} alt={group.name} className="dash-streamer-avatar" />
+                )}
+                <span className="dash-streamer-name">{group.name}</span>
+                <span className="dash-streamer-count">{group.boosters.length} booster{group.boosters.length > 1 ? 's' : ''}</span>
               </div>
-            ))
-          ) : (
-            <div className="no-cards">
-              <p>Aucune carte dans votre collection</p>
-              <p className="hint">Achetez des boosters pour commencer votre collection !</p>
+              <div className="dash-boosters-row">
+                {group.boosters.map(booster => (
+                  <div key={booster.id} className="dash-booster-card">
+                    <div className="dash-booster-3d">
+                      <BoosterMini3D booster={booster} />
+                    </div>
+                    <div className="dash-booster-info">
+                      <span className="dash-booster-name">{booster.name}</span>
+                      <span className="dash-booster-price">{booster.price.toLocaleString()} coins</span>
+                      <span className="dash-booster-cards">{booster.total_cards || '?'} cartes</span>
+                      <button
+                        className="dash-buy-btn"
+                        onClick={() => onNavigate && onNavigate('shop')}
+                      >
+                        Acheter
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+          ))
+        ) : (
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              {streamerSearch ? (
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  <line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+              ) : (
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/>
+                  <path d="M8 21h8"/>
+                  <path d="M12 17v4"/>
+                  <path d="M7 8h.01"/>
+                  <path d="M12 8h.01"/>
+                  <path d="M17 8h.01"/>
+                </svg>
+              )}
+            </div>
+            <p className="empty-state-title">
+              {streamerSearch ? `Aucun streamer correspondant a "${streamerSearch}"` : 'Aucun booster disponible'}
+            </p>
+            <p className="empty-state-hint">
+              {streamerSearch ? 'Essayez un autre nom de streamer.' : 'Les streamers doivent creer et publier des boosters pour qu\'ils apparaissent ici.'}
+            </p>
+          </div>
+        )}
       </div>
+
     </div>
   );
 }
 
 export default Dashboard;
-
