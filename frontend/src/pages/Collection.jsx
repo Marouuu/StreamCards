@@ -3,7 +3,6 @@ import { api } from '../config/api';
 import { getToken } from '../utils/auth';
 import { useToast } from '../components/Toast';
 import CardPreview from '../components/CardPreview';
-import CardMini3D from '../components/CardMini3D';
 import CardDetailModal from '../components/CardDetailModal';
 import './Collection.css';
 
@@ -374,7 +373,7 @@ function Collection({ onBack, onUserUpdate }) {
                     {card.stackCount > 1 && (
                       <span className="stack-count">x{card.stackCount}</span>
                     )}
-                    <CardMini3D card={card} size="medium" />
+                    <CardPreview card={card} size="medium" />
                     <div className="card-actions">
                       {card.booster_pack_name && (
                         <span className="card-meta-booster">{card.booster_pack_name}</span>
