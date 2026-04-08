@@ -6,14 +6,6 @@ import { checkAchievements } from '../utils/achievements.js';
 
 const router = express.Router();
 
-// Fallback mock packs if DB has no published packs
-const FALLBACK_PACKS = [
-  { id: 1, name: 'Booster Commun', description: 'Un booster standard avec des cartes communes', price: 100, cards_per_open: 5, rarity: 'common', rarity_weights: { common: 50, uncommon: 30, rare: 15, epic: 4, legendary: 1 }, image_url: null, color_primary: '#8a8a8a', color_accent: '#d0d0d0', color_text: '#ffffff', subtitle: null },
-  { id: 2, name: 'Booster Rare', description: 'Un booster premium avec une chance de cartes rares', price: 300, cards_per_open: 5, rarity: 'rare', rarity_weights: { common: 30, uncommon: 35, rare: 25, epic: 8, legendary: 2 }, image_url: null, color_primary: '#0a3d6b', color_accent: '#0096ff', color_text: '#ffffff', subtitle: null },
-  { id: 3, name: 'Booster Épique', description: 'Un booster exceptionnel avec des cartes épiques', price: 500, cards_per_open: 5, rarity: 'epic', rarity_weights: { common: 15, uncommon: 25, rare: 30, epic: 22, legendary: 8 }, image_url: null, color_primary: '#3d0a6b', color_accent: '#9600ff', color_text: '#ffffff', subtitle: null },
-  { id: 4, name: 'Booster Légendaire', description: 'Le booster ultime !', price: 1000, cards_per_open: 5, rarity: 'legendary', rarity_weights: { common: 5, uncommon: 15, rare: 30, epic: 30, legendary: 20 }, image_url: null, color_primary: '#6b4a00', color_accent: '#ffd700', color_text: '#ffffff', subtitle: null },
-  { id: 5, name: 'Booster Ultra Légendaire', description: 'Le booster mythique !', price: 2000, cards_per_open: 5, rarity: 'ultra-legendary', rarity_weights: { uncommon: 10, rare: 20, epic: 30, legendary: 30, 'ultra-legendary': 10 }, image_url: null, color_primary: '#ff0040', color_accent: '#ff00ff', color_text: '#ffffff', subtitle: null },
-];
 
 /**
  * Draw cards from a booster using weighted rarity probabilities.
@@ -118,10 +110,9 @@ router.get('/boosters', authenticate, async (req, res) => {
        WHERE bp.is_published = true AND bp.approval_status = 'approved'
        ORDER BY bp.price ASC`
     );
-    const packs = result.rows.length > 0 ? result.rows : FALLBACK_PACKS;
-    res.json({ boosters: packs });
+    res.json({ boosters: result.rows });
   } catch {
-    res.json({ boosters: FALLBACK_PACKS });
+    res.json({ boosters: [] });
   }
 });
 
@@ -137,9 +128,6 @@ router.post('/boosters/:boosterId/purchase', authenticate, async (req, res) => {
       const result = await pool.query('SELECT * FROM booster_packs WHERE id = $1', [boosterId]);
       if (result.rows.length > 0) booster = result.rows[0];
     } catch { /* DB unavailable */ }
-    if (!booster) {
-      booster = FALLBACK_PACKS.find(b => b.id === parseInt(boosterId));
-    }
     if (!booster) {
       return res.status(404).json({ error: 'Booster not found' });
     }
