@@ -289,9 +289,12 @@ router.post('/config', authenticate, requireStreamer, async (req, res) => {
         try {
           eventSubData = await createEventSubSubscription(streamerId, callbackUrl, process.env.TWITCH_EVENTSUB_SECRET);
         } catch (err) {
-          console.error('Failed to create EventSub subscription:', err.response?.data || err.message);
+          const errData = err.response?.data;
+          const errStatus = err.response?.status;
+          console.error('Failed to create EventSub subscription:', { status: errStatus, data: errData, message: err.message });
           try { await deleteCustomReward(accessToken, streamerId, twitchReward.id); } catch {}
-          return res.status(500).json({ error: 'Failed to create webhook subscription' });
+          const detail = errData?.message || err.message;
+          return res.status(500).json({ error: `Failed to create webhook subscription: ${detail}` });
         }
 
         rewardId = twitchReward.id;
