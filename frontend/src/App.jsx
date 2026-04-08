@@ -16,7 +16,10 @@ import PackHistory from './pages/PackHistory'
 import Achievements from './pages/Achievements'
 import Analytics from './pages/Analytics'
 import Auctions from './pages/Auctions'
+import Friends from './pages/Friends'
+import TwitchIntegration from './pages/TwitchIntegration'
 import NotificationBell from './components/NotificationBell'
+import Tutorial from './components/Tutorial'
 import { api } from './config/api'
 import { getToken, setToken, removeToken } from './utils/auth'
 
@@ -33,6 +36,7 @@ function AppInner() {
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState('dashboard')
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
   const moreRef = useRef(null)
   const toast = useToast()
 
@@ -53,8 +57,13 @@ function AppInner() {
 
     if (token) {
       setToken(token)
+      const scopeUpgraded = urlParams.get('scope_upgraded')
       window.history.replaceState({}, document.title, window.location.pathname)
       fetchUser()
+      if (scopeUpgraded) {
+        setCurrentPage('twitch-integration')
+        toast.success('Autorisations Twitch mises a jour !')
+      }
     } else if (error) {
       console.error('OAuth error:', error)
       toast.error(`Connexion echouee : ${error}`)
@@ -76,6 +85,9 @@ function AppInner() {
       const userData = await api.getCurrentUser()
       if (userData) {
         setUser(userData)
+        if (!localStorage.getItem('streamcards_tutorial_done')) {
+          setShowTutorial(true)
+        }
       } else {
         removeToken()
       }
@@ -111,6 +123,12 @@ function AppInner() {
   return (
     <div className="app">
       <FloatingBackground />
+      {showTutorial && (
+        <Tutorial
+          onComplete={() => setShowTutorial(false)}
+          onNavigate={setCurrentPage}
+        />
+      )}
       <header className="app-header">
         <h1 className="app-logo" onClick={() => user && setCurrentPage('dashboard')}>
           <span className="logo-icon">&#127924;</span>
@@ -169,6 +187,9 @@ function AppInner() {
                         <span className="nav-more-icon">&#128230;</span> Mes Packs
                       </button>
                     )}
+                    <button className={currentPage === 'friends' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('friends'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#128101;</span> Amis
+                    </button>
                     <button className={currentPage === 'leaderboard' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('leaderboard'); setMoreMenuOpen(false); }}>
                       <span className="nav-more-icon">&#127942;</span> Classement
                     </button>
@@ -184,6 +205,11 @@ function AppInner() {
                     <button className={currentPage === 'achievements' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('achievements'); setMoreMenuOpen(false); }}>
                       <span className="nav-more-icon">&#127942;</span> Succes
                     </button>
+                    {user.isStreamer && (
+                      <button className={currentPage === 'twitch-integration' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('twitch-integration'); setMoreMenuOpen(false); }}>
+                        <span className="nav-more-icon">&#127909;</span> Twitch CP
+                      </button>
+                    )}
                     {user.isStreamer && (
                       <button className={currentPage === 'analytics' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('analytics'); setMoreMenuOpen(false); }}>
                         <span className="nav-more-icon">&#128202;</span> Analytics
@@ -233,6 +259,10 @@ function AppInner() {
             <Achievements onBack={() => setCurrentPage('dashboard')} />
           ) : currentPage === 'auctions' ? (
             <Auctions onBack={() => setCurrentPage('dashboard')} onUserUpdate={setUser} currentUserId={user.twitchId} />
+          ) : currentPage === 'friends' ? (
+            <Friends onBack={() => setCurrentPage('dashboard')} currentUserId={user.twitchId} />
+          ) : currentPage === 'twitch-integration' && user.isStreamer ? (
+            <TwitchIntegration onBack={() => setCurrentPage('dashboard')} isAdmin={user.isAdmin} />
           ) : currentPage === 'analytics' && user.isStreamer ? (
             <Analytics onBack={() => setCurrentPage('dashboard')} />
           ) : currentPage === 'admin' && user.isAdmin ? (

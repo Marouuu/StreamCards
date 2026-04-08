@@ -162,7 +162,7 @@ router.post('/recycle/:cardId', authenticate, async (req, res) => {
         display_name: req.user.displayName,
         profile_image_url: req.user.profileImageUrl,
       },
-      req.user.twitchAccessToken,
+      null,
       newCoins
     );
 
@@ -227,7 +227,7 @@ router.post('/recycle-all', authenticate, async (req, res) => {
         display_name: req.user.displayName,
         profile_image_url: req.user.profileImageUrl,
       },
-      req.user.twitchAccessToken,
+      null,
       newCoins
     );
 

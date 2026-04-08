@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   display_name    VARCHAR(128),
   email           VARCHAR(256),
   profile_image_url TEXT,
+  twitch_access_token TEXT,
   is_streamer     BOOLEAN NOT NULL DEFAULT false,
   coins           INTEGER NOT NULL DEFAULT 0,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -122,12 +123,115 @@ CREATE TABLE IF NOT EXISTS transactions (
   reference_type  VARCHAR(32),
   reference_id    INTEGER,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT chk_tx_type CHECK (type IN ('purchase','reward','gift','refund','admin'))
+  CONSTRAINT chk_tx_type CHECK (type IN ('purchase','reward','gift','refund','admin','twitch_redemption','trade'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_type ON transactions(type);
 CREATE INDEX IF NOT EXISTS idx_transactions_created ON transactions(created_at);
+
+-- ============================================================
+
+-- Friendships
+CREATE TABLE IF NOT EXISTS friendships (
+  id              SERIAL PRIMARY KEY,
+  user_id         VARCHAR(64) NOT NULL REFERENCES users(twitch_id) ON DELETE CASCADE,
+  friend_id       VARCHAR(64) NOT NULL REFERENCES users(twitch_id) ON DELETE CASCADE,
+  status          VARCHAR(20) NOT NULL DEFAULT 'pending',
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_friendship_status CHECK (status IN ('pending', 'accepted', 'blocked')),
+  CONSTRAINT uq_friendship UNIQUE (user_id, friend_id),
+  CONSTRAINT chk_no_self_friend CHECK (user_id != friend_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_friendships_user ON friendships(user_id);
+CREATE INDEX IF NOT EXISTS idx_friendships_friend ON friendships(friend_id);
+CREATE INDEX IF NOT EXISTS idx_friendships_status ON friendships(status);
+
+-- ============================================================
+
+-- Messages (private chat between friends)
+CREATE TABLE IF NOT EXISTS messages (
+  id              SERIAL PRIMARY KEY,
+  sender_id       VARCHAR(64) NOT NULL REFERENCES users(twitch_id) ON DELETE CASCADE,
+  receiver_id     VARCHAR(64) NOT NULL REFERENCES users(twitch_id) ON DELETE CASCADE,
+  content         TEXT NOT NULL,
+  is_read         BOOLEAN NOT NULL DEFAULT false,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_receiver ON messages(receiver_id);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(LEAST(sender_id, receiver_id), GREATEST(sender_id, receiver_id));
+
+-- ============================================================
+
+-- Activity feed (friends activity)
+CREATE TABLE IF NOT EXISTS activity_feed (
+  id              SERIAL PRIMARY KEY,
+  user_id         VARCHAR(64) NOT NULL REFERENCES users(twitch_id) ON DELETE CASCADE,
+  type            VARCHAR(50) NOT NULL,
+  data            JSONB NOT NULL DEFAULT '{}',
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_activity_type CHECK (type IN (
+    'pack_opened', 'card_obtained', 'trade_completed',
+    'marketplace_sale', 'marketplace_purchase',
+    'auction_won', 'achievement_unlocked', 'friend_added'
+  ))
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_feed_user ON activity_feed(user_id);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_created ON activity_feed(created_at DESC);
+
+-- ============================================================
+
+-- Twitch reward configs (one per streamer)
+CREATE TABLE IF NOT EXISTS twitch_reward_configs (
+  id                  SERIAL PRIMARY KEY,
+  streamer_id         VARCHAR(64) NOT NULL REFERENCES users(twitch_id) ON DELETE CASCADE,
+  reward_id           VARCHAR(128),
+  reward_title        VARCHAR(128) NOT NULL DEFAULT 'StreamCards Coins',
+  channel_points_cost INTEGER NOT NULL DEFAULT 1000,
+  coins_per_redeem    INTEGER NOT NULL DEFAULT 100,
+  is_enabled          BOOLEAN NOT NULL DEFAULT false,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_streamer_reward UNIQUE (streamer_id),
+  CONSTRAINT chk_coins_positive CHECK (coins_per_redeem > 0),
+  CONSTRAINT chk_cp_cost_positive CHECK (channel_points_cost > 0)
+);
+
+-- ============================================================
+
+-- EventSub subscriptions tracking
+CREATE TABLE IF NOT EXISTS eventsub_subscriptions (
+  id              SERIAL PRIMARY KEY,
+  twitch_sub_id   VARCHAR(128) UNIQUE NOT NULL,
+  streamer_id     VARCHAR(64) NOT NULL REFERENCES users(twitch_id) ON DELETE CASCADE,
+  sub_type        VARCHAR(64) NOT NULL,
+  status          VARCHAR(32) NOT NULL DEFAULT 'pending',
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_eventsub_streamer ON eventsub_subscriptions(streamer_id);
+
+-- ============================================================
+
+-- Twitch redemption log (idempotency)
+CREATE TABLE IF NOT EXISTS twitch_redemption_log (
+  id                SERIAL PRIMARY KEY,
+  twitch_event_id   VARCHAR(128) UNIQUE NOT NULL,
+  streamer_id       VARCHAR(64) NOT NULL,
+  viewer_twitch_id  VARCHAR(64) NOT NULL,
+  reward_id         VARCHAR(128) NOT NULL,
+  coins_granted     INTEGER NOT NULL,
+  processed_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_redemption_viewer ON twitch_redemption_log(viewer_twitch_id);
+CREATE INDEX IF NOT EXISTS idx_redemption_streamer ON twitch_redemption_log(streamer_id);
 
 -- ============================================================
 -- Helper: auto-update updated_at on row change

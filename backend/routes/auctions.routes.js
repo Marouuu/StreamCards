@@ -339,7 +339,7 @@ router.post('/:id/bid', authenticate, async (req, res) => {
     const newCoins = (await pool.query('SELECT coins FROM users WHERE twitch_id = $1', [bidderId])).rows[0].coins;
     const newToken = generateToken(
       { id: bidderId, login: req.user.username, display_name: req.user.displayName, profile_image_url: req.user.profileImageUrl },
-      req.user.twitchAccessToken, newCoins
+      null, newCoins
     );
 
     res.json({ success: true, newCoins, newToken });

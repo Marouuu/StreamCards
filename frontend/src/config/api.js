@@ -220,6 +220,24 @@ export const api = {
 
   // Recycle all duplicates
   recycleAll: () => authFetch('/cards/recycle-all', { method: 'POST' }),
+
+  // Twitch EventSub / Channel Points
+  getTwitchRewardConfig: () => authFetch('/twitch/eventsub/config'),
+  updateTwitchRewardConfig: (config) => authFetch('/twitch/eventsub/config', { method: 'POST', body: JSON.stringify(config) }),
+  deleteTwitchRewardConfig: () => authFetch('/twitch/eventsub/config', { method: 'DELETE' }),
+  getTwitchRedemptionLog: (limit = 20) => authFetch(`/twitch/eventsub/redemptions?limit=${limit}`),
+  testTwitchRedeem: (viewerTwitchId) => authFetch('/twitch/eventsub/test-redeem', { method: 'POST', body: JSON.stringify({ viewerTwitchId }) }),
+
+  // Friends
+  getFriends: () => authFetch('/friends'),
+  sendFriendRequest: (friendId) => authFetch('/friends/request', { method: 'POST', body: JSON.stringify({ friendId }) }),
+  acceptFriendRequest: (requestId) => authFetch(`/friends/accept/${requestId}`, { method: 'POST' }),
+  declineFriendRequest: (requestId) => authFetch(`/friends/decline/${requestId}`, { method: 'POST' }),
+  removeFriend: (friendId) => authFetch(`/friends/${friendId}`, { method: 'DELETE' }),
+  getFriendActivity: (limit = 30) => authFetch(`/friends/activity?limit=${limit}`),
+  getMessages: (friendId, limit = 50, before) => authFetch(`/friends/messages/${friendId}?limit=${limit}${before ? '&before=' + before : ''}`),
+  sendMessage: (friendId, content) => authFetch(`/friends/messages/${friendId}`, { method: 'POST', body: JSON.stringify({ content }) }),
+  getUnreadMessages: () => authFetch('/friends/unread'),
 };
 
 export default api;

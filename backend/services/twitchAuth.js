@@ -8,12 +8,12 @@ const TWITCH_FOLLOWS_URL = 'https://api.twitch.tv/helix/channels/followed';
 /**
  * Generate Twitch OAuth authorization URL
  */
-export function getTwitchAuthUrl(clientId, redirectUri, state) {
+export function getTwitchAuthUrl(clientId, redirectUri, state, scopes = 'user:read:email user:read:follows') {
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
     response_type: 'code',
-    scope: 'user:read:email user:read:follows', // Added scope for followed channels
+    scope: scopes,
     state: state,
   });
 
@@ -39,6 +39,7 @@ export async function exchangeCodeForToken(clientId, clientSecret, code, redirec
       accessToken: response.data.access_token,
       refreshToken: response.data.refresh_token,
       expiresIn: response.data.expires_in,
+      scope: response.data.scope,
     };
   } catch (error) {
     console.error('Error exchanging code for token:', error.response?.data || error.message);

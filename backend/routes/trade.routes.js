@@ -247,6 +247,13 @@ router.post('/:tradeId/accept', authenticate, async (req, res) => {
     await createNotification(trade.sender_id, 'trade_accepted', 'Echange accepte',
       `${req.user.displayName || 'Le destinataire'} a accepte votre echange`, { tradeId });
 
+    // Log activity for friends feed
+    try {
+      const { createActivity } = await import('../utils/activity.js');
+      await createActivity(trade.sender_id, 'trade_completed', { tradeId });
+      await createActivity(trade.receiver_id, 'trade_completed', { tradeId });
+    } catch {}
+
     // Check achievements for both users
     checkAchievements(trade.sender_id).catch(() => {});
     checkAchievements(trade.receiver_id).catch(() => {});

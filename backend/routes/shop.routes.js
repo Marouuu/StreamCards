@@ -189,6 +189,16 @@ router.post('/boosters/:boosterId/purchase', authenticate, async (req, res) => {
       );
 
       await pool.query('COMMIT');
+
+      // Log activity for friends feed
+      try {
+        const { createActivity } = await import('../utils/activity.js');
+        const bestRarity = drawnCards.reduce((best, c) => {
+          const order = ['common','uncommon','rare','epic','legendary','ultra-legendary'];
+          return order.indexOf(c.rarity) > order.indexOf(best) ? c.rarity : best;
+        }, 'common');
+        await createActivity(twitchId, 'pack_opened', { packName: booster.name, bestRarity });
+      } catch {}
     } catch (dbErr) {
       try { await pool.query('ROLLBACK'); } catch { /* ignore */ }
       console.warn('DB transaction failed:', dbErr.message);
@@ -202,7 +212,7 @@ router.post('/boosters/:boosterId/purchase', authenticate, async (req, res) => {
         display_name: req.user.displayName,
         profile_image_url: req.user.profileImageUrl,
       },
-      req.user.twitchAccessToken,
+      null,
       newCoins
     );
 

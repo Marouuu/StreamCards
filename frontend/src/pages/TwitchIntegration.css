@@ -1,0 +1,350 @@
+.twitch-integration {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--page-padding);
+  padding-top: 1rem;
+}
+
+.twitch-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.twitch-header h1 {
+  font-size: 2rem;
+  color: #fff;
+  margin: 0;
+}
+
+.twitch-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.twitch-back-btn:hover {
+  background: var(--color-surface-hover);
+  color: #fff;
+}
+
+.twitch-loading {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 3rem;
+}
+
+/* Status banner */
+.twitch-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.twitch-status.active {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--color-success);
+}
+
+.twitch-status.inactive {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.twitch-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.twitch-status.active .twitch-status-dot {
+  background: var(--color-success);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+.twitch-status.inactive .twitch-status-dot {
+  background: var(--color-text-muted);
+}
+
+.twitch-status-detail {
+  font-weight: 400;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  width: 100%;
+  margin-left: 1.75rem;
+}
+
+/* Explainer */
+.twitch-explainer {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(145, 70, 255, 0.08);
+  border: 1px solid rgba(145, 70, 255, 0.2);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  align-items: flex-start;
+}
+
+.twitch-explainer-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.twitch-explainer h3 {
+  color: #fff;
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.twitch-explainer p {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Config card */
+.twitch-config-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.twitch-config-card h2 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin: 0 0 1.25rem;
+}
+
+.twitch-form-group {
+  margin-bottom: 1rem;
+}
+
+.twitch-form-group label {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.twitch-input {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.twitch-input:focus {
+  border-color: var(--color-primary);
+}
+
+.twitch-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.twitch-form-hint {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+}
+
+.twitch-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.twitch-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+/* Buttons */
+.twitch-btn {
+  padding: 0.65rem 1.5rem;
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.twitch-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.twitch-btn--primary {
+  background: linear-gradient(135deg, #9146FF, #772CE8);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(145, 70, 255, 0.3);
+}
+
+.twitch-btn--primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(145, 70, 255, 0.4);
+}
+
+.twitch-btn--secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.twitch-btn--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.twitch-btn--danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.twitch-btn--danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+/* Redemptions */
+.twitch-redemptions {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.twitch-redemptions h2 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin: 0 0 1rem;
+}
+
+.twitch-redemptions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.twitch-redemption-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+}
+
+.twitch-redemption-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.twitch-redemption-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.twitch-redemption-name {
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.twitch-redemption-coins {
+  color: var(--color-success);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.twitch-redemption-time {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Help */
+.twitch-help {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.twitch-help h3 {
+  color: #fff;
+  font-size: 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.twitch-help ol {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.8;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .twitch-integration {
+    padding: 1rem;
+  }
+
+  .twitch-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .twitch-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .twitch-explainer {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}

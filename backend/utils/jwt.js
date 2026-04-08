@@ -9,12 +9,12 @@ export function generateToken(twitchUser, twitchAccessToken, coins = 0) {
     username: twitchUser.login,
     displayName: twitchUser.display_name,
     profileImageUrl: twitchUser.profile_image_url,
-    twitchAccessToken: twitchAccessToken, // Store access token for API calls
-    coins: coins, // Coins amount
+    // Note: twitchAccessToken and coins are NOT stored in the JWT for security.
+    // The access token is stored in the DB, and coins are always read from DB.
   };
 
   return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: '7d', // Token expires in 7 days
+    expiresIn: '7d',
   });
 }
 

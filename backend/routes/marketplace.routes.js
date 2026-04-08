@@ -236,6 +236,13 @@ router.post('/buy/:listingId', authenticate, async (req, res) => {
     await createNotification(listing.seller_id, 'card_sold', 'Carte vendue !',
       `Votre ${cardName} a ete achetee pour ${listing.price} coins`, { listingId: listing.id });
 
+    // Log activity for friends feed
+    try {
+      const { createActivity } = await import('../utils/activity.js');
+      await createActivity(listing.seller_id, 'marketplace_sale', { cardName, price: listing.price });
+      await createActivity(buyerId, 'marketplace_purchase', { cardName, price: listing.price });
+    } catch {}
+
     // New JWT for buyer
     const newToken = generateToken(
       {
@@ -244,7 +251,7 @@ router.post('/buy/:listingId', authenticate, async (req, res) => {
         display_name: req.user.displayName,
         profile_image_url: req.user.profileImageUrl,
       },
-      req.user.twitchAccessToken,
+      null,
       newBuyerCoins
     );
 

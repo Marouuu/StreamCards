@@ -7,15 +7,18 @@ import crypto from 'crypto';
 const router = express.Router();
 
 // Upsert user in database on login — returns the DB user row
-async function upsertUser(twitchUser) {
+async function upsertUser(twitchUser, twitchAccessToken, refreshToken = null, scopes = null) {
   try {
     const result = await pool.query(
-      `INSERT INTO users (twitch_id, username, display_name, email, profile_image_url)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO users (twitch_id, username, display_name, email, profile_image_url, twitch_access_token, twitch_refresh_token, twitch_scopes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        ON CONFLICT (twitch_id) DO UPDATE SET
          username = EXCLUDED.username,
          display_name = EXCLUDED.display_name,
          profile_image_url = EXCLUDED.profile_image_url,
+         twitch_access_token = EXCLUDED.twitch_access_token,
+         twitch_refresh_token = COALESCE(EXCLUDED.twitch_refresh_token, users.twitch_refresh_token),
+         twitch_scopes = COALESCE(EXCLUDED.twitch_scopes, users.twitch_scopes),
          updated_at = NOW()
        RETURNING *`,
       [
@@ -24,6 +27,9 @@ async function upsertUser(twitchUser) {
         twitchUser.display_name,
         twitchUser.email || null,
         twitchUser.profile_image_url,
+        twitchAccessToken,
+        refreshToken,
+        scopes,
       ]
     );
     return result.rows[0];
@@ -75,14 +81,23 @@ router.get('/twitch/callback', async (req, res) => {
     const tokenData = await exchangeCodeForToken(clientId, clientSecret, code, redirectUri);
     const twitchUser = await getTwitchUserInfo(tokenData.accessToken, clientId);
 
-    // Persist user to database (upsert)
-    const dbUser = await upsertUser(twitchUser);
+    // Detect scope upgrade via state parameter
+    const isScopeUpgrade = state && state.includes(':scope_upgrade');
+
+    // Determine scopes from the token response (Twitch includes them)
+    const grantedScopes = tokenData.scope ? (Array.isArray(tokenData.scope) ? tokenData.scope.join(' ') : tokenData.scope) : null;
+
+    // Persist user to database (upsert) — stores access token, refresh token, and scopes
+    const dbUser = await upsertUser(twitchUser, tokenData.accessToken, tokenData.refreshToken, grantedScopes);
 
     // Use DB coins if available, otherwise 0
     const coins = dbUser ? dbUser.coins : 0;
 
-    const jwtToken = generateToken(twitchUser, tokenData.accessToken, coins);
-    res.redirect(`${frontendUrl}?token=${jwtToken}&success=true`);
+    const jwtToken = generateToken(twitchUser, null, coins);
+    const redirectParams = isScopeUpgrade
+      ? `token=${jwtToken}&scope_upgraded=true`
+      : `token=${jwtToken}&success=true`;
+    res.redirect(`${frontendUrl}?${redirectParams}`);
   } catch (error) {
     console.error('OAuth callback error:', error);
     res.redirect(`${frontendUrl}?error=${encodeURIComponent(error.message)}`);

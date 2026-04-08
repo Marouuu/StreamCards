@@ -9,8 +9,12 @@ const router = express.Router();
 // Get followed channels from Twitch API
 router.get('/followed', authenticate, async (req, res) => {
   try {
-    const { twitchAccessToken, twitchId } = req.user;
+    const { twitchId } = req.user;
     const clientId = process.env.TWITCH_CLIENT_ID;
+
+    // Read Twitch access token from DB (no longer stored in JWT)
+    const tokenResult = await pool.query('SELECT twitch_access_token FROM users WHERE twitch_id = $1', [twitchId]);
+    const twitchAccessToken = tokenResult.rows[0]?.twitch_access_token;
 
     if (!twitchAccessToken || !twitchId) {
       return res.status(400).json({ error: 'Twitch access token not available' });
@@ -86,7 +90,7 @@ router.post('/add-coins', authenticate, async (req, res) => {
         display_name: req.user.displayName,
         profile_image_url: req.user.profileImageUrl,
       },
-      req.user.twitchAccessToken,
+      null,
       newCoins
     );
 

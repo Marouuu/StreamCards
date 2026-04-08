@@ -220,7 +220,7 @@ router.post('/claim-daily', authenticate, async (req, res) => {
 
     const newToken = generateToken(
       { id: twitchId, login: req.user.username, display_name: req.user.displayName, profile_image_url: req.user.profileImageUrl },
-      req.user.twitchAccessToken,
+      null,
       newCoins
     );
 
@@ -332,7 +332,7 @@ router.post('/claim-quest/:questId', authenticate, async (req, res) => {
 
     const newToken = generateToken(
       { id: twitchId, login: req.user.username, display_name: req.user.displayName, profile_image_url: req.user.profileImageUrl },
-      req.user.twitchAccessToken,
+      null,
       newCoins
     );
 
