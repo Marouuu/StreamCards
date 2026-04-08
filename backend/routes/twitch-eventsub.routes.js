@@ -15,7 +15,6 @@ import crypto from 'crypto';
 
 const router = express.Router();
 const isDev = process.env.NODE_ENV !== 'production';
-const SKIP_TWITCH_API = process.env.SKIP_TWITCH_API === 'true' || isDev;
 
 // ─── Webhook (no JWT auth — Twitch calls this directly) ───────────────
 
@@ -206,80 +205,81 @@ router.post('/config', authenticate, requireStreamer, async (req, res) => {
       let rewardId;
       let eventSubId;
       let eventSubType;
+      let useMockMode = false;
 
-      if (SKIP_TWITCH_API) {
-        // ── Dev mode: skip Twitch API calls, use fake IDs ──
-        console.log('[DEV] Skipping Twitch reward creation & EventSub (not affiliate/partner required)');
-        rewardId = `dev_reward_${crypto.randomBytes(8).toString('hex')}`;
-        eventSubId = `dev_sub_${crypto.randomBytes(8).toString('hex')}`;
+      // Check scope
+      const user = await pool.query(
+        'SELECT twitch_scopes, twitch_access_token, twitch_refresh_token FROM users WHERE twitch_id = $1',
+        [streamerId]
+      );
+      const scopes = user.rows[0]?.twitch_scopes || '';
+
+      if (!scopes.includes('channel:manage:redemptions')) {
+        const state = crypto.randomBytes(16).toString('hex') + ':scope_upgrade';
+        const authUrl = getTwitchAuthUrl(
+          process.env.TWITCH_CLIENT_ID,
+          process.env.TWITCH_REDIRECT_URI,
+          state,
+          'user:read:email user:read:follows channel:manage:redemptions channel:read:redemptions'
+        );
+        return res.json({ needsReauth: true, authUrl });
+      }
+
+      let accessToken = user.rows[0]?.twitch_access_token;
+      const refreshToken = user.rows[0]?.twitch_refresh_token;
+
+      // Try to create the custom reward on Twitch
+      let twitchReward;
+      try {
+        twitchReward = await createCustomReward(accessToken, streamerId, title, cpCost);
+      } catch (err) {
+        if (err.response?.status === 401 && refreshToken) {
+          try {
+            const refreshed = await refreshAccessToken(refreshToken);
+            await pool.query(
+              'UPDATE users SET twitch_access_token = $1, twitch_refresh_token = $2 WHERE twitch_id = $3',
+              [refreshed.accessToken, refreshed.refreshToken, streamerId]
+            );
+            accessToken = refreshed.accessToken;
+            twitchReward = await createCustomReward(accessToken, streamerId, title, cpCost);
+          } catch (refreshErr) {
+            return res.json({ needsReauth: true, authUrl: getTwitchAuthUrl(
+              process.env.TWITCH_CLIENT_ID, process.env.TWITCH_REDIRECT_URI,
+              crypto.randomBytes(16).toString('hex') + ':scope_upgrade',
+              'user:read:email user:read:follows channel:manage:redemptions channel:read:redemptions'
+            )});
+          }
+        } else if (err.response?.status === 403) {
+          // Not affiliate/partner — fall back to mock mode
+          console.log(`[MOCK] Streamer ${streamerId} is not affiliate/partner, using mock mode`);
+          useMockMode = true;
+        } else {
+          const apiError = err.response?.data;
+          const status = err.response?.status;
+          const errorMsg = apiError?.message || err.message;
+          console.error('Failed to create Twitch reward:', { status, message: errorMsg, data: apiError });
+
+          let userMessage = 'Failed to create Twitch Channel Points reward';
+          if (status === 400) {
+            if (errorMsg.includes('CREATE_CUSTOM_REWARD_DUPLICATE_REWARD')) {
+              userMessage = 'Une recompense avec ce nom existe deja sur votre chaine. Changez le titre.';
+            } else if (errorMsg.includes('CREATE_CUSTOM_REWARD_MAX_PER_BROADCASTER_LIMIT')) {
+              userMessage = 'Vous avez atteint la limite de recompenses personnalisees (50 max)';
+            } else {
+              userMessage = `Configuration invalide: ${errorMsg}`;
+            }
+          }
+          return res.status(400).json({ error: userMessage });
+        }
+      }
+
+      if (useMockMode) {
+        // Non-affiliate: save config with mock IDs, test button available
+        rewardId = `mock_reward_${crypto.randomBytes(8).toString('hex')}`;
+        eventSubId = `mock_sub_${crypto.randomBytes(8).toString('hex')}`;
         eventSubType = 'channel.channel_points_custom_reward_redemption.add';
       } else {
-        // ── Production: real Twitch API calls ──
-        // Check scope
-        const user = await pool.query(
-          'SELECT twitch_scopes, twitch_access_token, twitch_refresh_token FROM users WHERE twitch_id = $1',
-          [streamerId]
-        );
-        const scopes = user.rows[0]?.twitch_scopes || '';
-
-        if (!scopes.includes('channel:manage:redemptions')) {
-          const state = crypto.randomBytes(16).toString('hex') + ':scope_upgrade';
-          const authUrl = getTwitchAuthUrl(
-            process.env.TWITCH_CLIENT_ID,
-            process.env.TWITCH_REDIRECT_URI,
-            state,
-            'user:read:email user:read:follows channel:manage:redemptions channel:read:redemptions'
-          );
-          return res.json({ needsReauth: true, authUrl });
-        }
-
-        let accessToken = user.rows[0]?.twitch_access_token;
-        const refreshToken = user.rows[0]?.twitch_refresh_token;
-
-        // Create the custom reward on Twitch
-        let twitchReward;
-        try {
-          twitchReward = await createCustomReward(accessToken, streamerId, title, cpCost);
-        } catch (err) {
-          if (err.response?.status === 401 && refreshToken) {
-            try {
-              const refreshed = await refreshAccessToken(refreshToken);
-              await pool.query(
-                'UPDATE users SET twitch_access_token = $1, twitch_refresh_token = $2 WHERE twitch_id = $3',
-                [refreshed.accessToken, refreshed.refreshToken, streamerId]
-              );
-              accessToken = refreshed.accessToken;
-              twitchReward = await createCustomReward(accessToken, streamerId, title, cpCost);
-            } catch (refreshErr) {
-              return res.json({ needsReauth: true, authUrl: getTwitchAuthUrl(
-                process.env.TWITCH_CLIENT_ID, process.env.TWITCH_REDIRECT_URI,
-                crypto.randomBytes(16).toString('hex') + ':scope_upgrade',
-                'user:read:email user:read:follows channel:manage:redemptions channel:read:redemptions'
-              )});
-            }
-          } else {
-            const apiError = err.response?.data;
-            const status = err.response?.status;
-            const errorMsg = apiError?.message || err.message;
-            console.error('Failed to create Twitch reward:', { status, message: errorMsg, data: apiError });
-
-            let userMessage = 'Failed to create Twitch Channel Points reward';
-            if (status === 403) {
-              userMessage = 'Votre compte Twitch doit etre Partenaire ou Affilie pour utiliser les Channel Points';
-            } else if (status === 400) {
-              if (errorMsg.includes('CREATE_CUSTOM_REWARD_DUPLICATE_REWARD')) {
-                userMessage = 'Une recompense avec ce nom existe deja sur votre chaine. Changez le titre.';
-              } else if (errorMsg.includes('CREATE_CUSTOM_REWARD_MAX_PER_BROADCASTER_LIMIT')) {
-                userMessage = 'Vous avez atteint la limite de recompenses personnalisees (50 max)';
-              } else {
-                userMessage = `Configuration invalide: ${errorMsg}`;
-              }
-            }
-            return res.status(status === 403 ? 403 : 400).json({ error: userMessage });
-          }
-        }
-
-        // Create EventSub subscription
+        // Real affiliate/partner: create EventSub webhook
         const callbackUrl = process.env.TWITCH_WEBHOOK_CALLBACK_URL;
         if (!callbackUrl) {
           return res.status(500).json({ error: 'TWITCH_WEBHOOK_CALLBACK_URL not configured' });
@@ -346,14 +346,17 @@ router.delete('/config', authenticate, requireStreamer, async (req, res) => {
 
     const rewardConfig = config.rows[0];
 
-    if (!SKIP_TWITCH_API) {
-      // Delete EventSub subscriptions on Twitch
+    const isMockReward = rewardConfig.reward_id?.startsWith('mock_') || rewardConfig.reward_id?.startsWith('dev_');
+
+    if (!isMockReward) {
+      // Real Twitch reward — clean up via API
       const subs = await pool.query('SELECT twitch_sub_id FROM eventsub_subscriptions WHERE streamer_id = $1', [streamerId]);
       for (const sub of subs.rows) {
-        try { await deleteEventSubSubscription(sub.twitch_sub_id); } catch {}
+        if (!sub.twitch_sub_id.startsWith('mock_') && !sub.twitch_sub_id.startsWith('dev_')) {
+          try { await deleteEventSubSubscription(sub.twitch_sub_id); } catch {}
+        }
       }
 
-      // Delete the Twitch reward
       if (rewardConfig.reward_id) {
         const user = await pool.query('SELECT twitch_access_token, twitch_refresh_token FROM users WHERE twitch_id = $1', [streamerId]);
         let accessToken = user.rows[0]?.twitch_access_token;
@@ -371,7 +374,7 @@ router.delete('/config', authenticate, requireStreamer, async (req, res) => {
         }
       }
     } else {
-      console.log('[DEV] Skipping Twitch reward/subscription cleanup');
+      console.log('[MOCK] Skipping Twitch API cleanup for mock reward');
     }
 
     // Clean DB
@@ -404,8 +407,8 @@ router.get('/redemptions', authenticate, requireStreamer, async (req, res) => {
   }
 });
 
-// ─── Dev-only: simulate a redemption ─────────────────────────────────
-if (SKIP_TWITCH_API) {
+// ─── Admin-only: simulate a redemption ─────────────────────────────────
+{
   router.post('/test-redeem', authenticate, requireStreamer, async (req, res) => {
     try {
       // Admin-only
