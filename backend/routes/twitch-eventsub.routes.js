@@ -15,6 +15,7 @@ import crypto from 'crypto';
 
 const router = express.Router();
 const isDev = process.env.NODE_ENV !== 'production';
+const SKIP_TWITCH_API = process.env.SKIP_TWITCH_API === 'true' || isDev;
 
 // ─── Webhook (no JWT auth — Twitch calls this directly) ───────────────
 
@@ -206,7 +207,7 @@ router.post('/config', authenticate, requireStreamer, async (req, res) => {
       let eventSubId;
       let eventSubType;
 
-      if (isDev) {
+      if (SKIP_TWITCH_API) {
         // ── Dev mode: skip Twitch API calls, use fake IDs ──
         console.log('[DEV] Skipping Twitch reward creation & EventSub (not affiliate/partner required)');
         rewardId = `dev_reward_${crypto.randomBytes(8).toString('hex')}`;
@@ -345,7 +346,7 @@ router.delete('/config', authenticate, requireStreamer, async (req, res) => {
 
     const rewardConfig = config.rows[0];
 
-    if (!isDev) {
+    if (!SKIP_TWITCH_API) {
       // Delete EventSub subscriptions on Twitch
       const subs = await pool.query('SELECT twitch_sub_id FROM eventsub_subscriptions WHERE streamer_id = $1', [streamerId]);
       for (const sub of subs.rows) {
@@ -404,7 +405,7 @@ router.get('/redemptions', authenticate, requireStreamer, async (req, res) => {
 });
 
 // ─── Dev-only: simulate a redemption ─────────────────────────────────
-if (isDev) {
+if (SKIP_TWITCH_API) {
   router.post('/test-redeem', authenticate, requireStreamer, async (req, res) => {
     try {
       // Admin-only
