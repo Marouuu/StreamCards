@@ -42,8 +42,10 @@ export async function exchangeCodeForToken(clientId, clientSecret, code, redirec
       scope: response.data.scope,
     };
   } catch (error) {
-    console.error('Error exchanging code for token:', error.response?.data || error.message);
-    throw new Error('Failed to exchange authorization code');
+    const twitchError = error.response?.data;
+    console.error('Error exchanging code for token:', twitchError || error.message);
+    const detail = twitchError?.message || twitchError?.error_description || error.message;
+    throw new Error(`Failed to exchange authorization code: ${detail}`);
   }
 }
 
