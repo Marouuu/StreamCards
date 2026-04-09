@@ -61,6 +61,7 @@ function CardEditor({ packId, packName, onBack }) {
   const [cards, setCards] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState(null);
   const [form, setForm] = useState({ ...DEFAULT_CARD });
+  const [imageRightsAccepted, setImageRightsAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(true);
@@ -82,6 +83,7 @@ function CardEditor({ packId, packName, onBack }) {
   const handleNew = () => {
     setSelectedCardId(null);
     setForm({ ...DEFAULT_CARD });
+    setImageRightsAccepted(false);
   };
 
   const handleSelect = (card) => {
@@ -98,6 +100,7 @@ function CardEditor({ packId, packName, onBack }) {
       effect_color: card.effect_color || '#ffffff',
       effect_intensity: card.effect_intensity ?? 50,
     });
+    setImageRightsAccepted(false);
   };
 
   const handleChange = (field, value) => {
@@ -113,6 +116,10 @@ function CardEditor({ packId, packName, onBack }) {
   };
 
   const handleSave = async () => {
+    if (!imageRightsAccepted) {
+      showMsg('error', 'Vous devez accepter la responsabilite des droits d\'auteur des images.');
+      return;
+    }
     setSaving(true);
     try {
       const data = { ...form };
@@ -337,8 +344,23 @@ function CardEditor({ packId, packName, onBack }) {
             )}
           </div>
 
+          <div className="ce-rights-section">
+            <label className="ce-rights-checkbox">
+              <input
+                type="checkbox"
+                checked={imageRightsAccepted}
+                onChange={e => setImageRightsAccepted(e.target.checked)}
+              />
+              <span>
+                Je certifie detenir les droits d'auteur ou une licence valide sur les images
+                utilisees pour cette carte. J'assume l'entiere responsabilite en cas de violation
+                des droits de propriete intellectuelle de tiers.
+              </span>
+            </label>
+          </div>
+
           <div className="ce-actions">
-            <button className="ce-save-btn" onClick={handleSave} disabled={saving}>
+            <button className="ce-save-btn" onClick={handleSave} disabled={saving || !imageRightsAccepted}>
               {saving ? 'Enregistrement...' : selectedCardId ? 'Mettre à jour' : 'Créer la carte'}
             </button>
             {selectedCardId && (

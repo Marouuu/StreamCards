@@ -31,6 +31,7 @@ function PackManager({ onBack }) {
   const [selectedPackId, setSelectedPackId] = useState(null);
   const [form, setForm] = useState({ ...DEFAULT_FORM });
   const [saving, setSaving] = useState(false);
+  const [imageRightsAccepted, setImageRightsAccepted] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(true);
   const [editingCardsPackId, setEditingCardsPackId] = useState(null);
@@ -52,6 +53,7 @@ function PackManager({ onBack }) {
   const handleNewPack = () => {
     setSelectedPackId(null);
     setForm({ ...DEFAULT_FORM, rarity_weights: { ...DEFAULT_WEIGHTS } });
+    setImageRightsAccepted(false);
   };
 
   const handleSelectPack = (pack) => {
@@ -74,6 +76,7 @@ function PackManager({ onBack }) {
       color_background: pack.color_background || '#1a1a2e',
       is_published: pack.is_published || false,
     });
+    setImageRightsAccepted(false);
   };
 
   const handleChange = (field, value) => {
@@ -88,6 +91,10 @@ function PackManager({ onBack }) {
   };
 
   const handleSave = async () => {
+    if (!imageRightsAccepted) {
+      showMessage('error', 'Vous devez accepter la responsabilite des droits d\'auteur des images.');
+      return;
+    }
     setSaving(true);
     try {
       if (selectedPackId) {
@@ -353,8 +360,23 @@ function PackManager({ onBack }) {
               </label>
             </div>
 
+            <div className="pm-form-section">
+              <label className="pm-rights-checkbox">
+                <input
+                  type="checkbox"
+                  checked={imageRightsAccepted}
+                  onChange={e => setImageRightsAccepted(e.target.checked)}
+                />
+                <span>
+                  Je certifie detenir les droits d'auteur ou une licence valide sur les images
+                  utilisees pour ce booster. J'assume l'entiere responsabilite en cas de violation
+                  des droits de propriete intellectuelle de tiers.
+                </span>
+              </label>
+            </div>
+
             <div className="pm-actions">
-              <button className="pm-save-btn" onClick={handleSave} disabled={saving}>
+              <button className="pm-save-btn" onClick={handleSave} disabled={saving || !imageRightsAccepted}>
                 {saving ? 'Enregistrement...' : selectedPackId ? 'Mettre à jour' : 'Créer le pack'}
               </button>
               {selectedPackId && (

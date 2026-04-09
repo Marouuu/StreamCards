@@ -378,6 +378,39 @@
   cursor: pointer;
 }
 
+/* Rights checkbox */
+.ce-rights-section {
+  margin-bottom: 0.8rem;
+}
+
+.ce-rights-checkbox {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 0.8rem !important;
+  cursor: pointer;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+}
+
+.ce-rights-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  accent-color: #8b5cf6;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.ce-rights-checkbox span {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.82rem !important;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
 /* Actions */
 .ce-actions {
   display: flex;

@@ -165,6 +165,33 @@ function CGU() {
         publication.
       </p>
 
+      <h3>5bis. Responsabilite des images et droits d'auteur</h3>
+      <p>
+        <strong>L'utilisateur est seul et entierement responsable des images
+        qu'il utilise</strong> lors de la creation de boosters et de cartes sur
+        StreamCards. En uploadant ou en renseignant une image, l'utilisateur
+        declare et garantit :
+      </p>
+      <ul>
+        <li>Qu'il detient les droits d'auteur sur l'image, ou qu'il dispose d'une licence valide l'autorisant a l'utiliser</li>
+        <li>Que l'image ne porte pas atteinte aux droits de propriete intellectuelle de tiers</li>
+        <li>Que l'image ne contient aucun contenu illicite, diffamatoire, haineux, pornographique ou portant atteinte a la dignite humaine</li>
+      </ul>
+      <p>
+        <strong>StreamCards decline toute responsabilite</strong> quant aux
+        images uploadees par les utilisateurs. En cas de reclamation d'un tiers
+        relative a une image, l'utilisateur qui l'a uploadee en assumera seul la
+        responsabilite, y compris les eventuels frais, dommages et interets.
+        L'utilisateur s'engage a garantir et indemniser l'editeur de StreamCards
+        contre toute reclamation liee aux contenus qu'il a mis en ligne.
+      </p>
+      <p>
+        Lors de la creation d'un booster ou d'une carte, l'utilisateur doit
+        explicitement cocher une case de confirmation engageant sa responsabilite
+        sur les droits d'auteur des images utilisees. Sans cette confirmation,
+        la creation est impossible.
+      </p>
+
       <h3>6. Propriete des cartes virtuelles</h3>
       <p>
         Les cartes virtuelles collectionnees sur StreamCards n'ont aucune valeur
