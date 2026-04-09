@@ -980,3 +980,48 @@
     gap: 0.5rem;
   }
 }
+
+/* ==============================
+   FOOTER LEGAL
+   ============================== */
+.hero-footer {
+  margin-top: 4rem;
+  padding: 2rem 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.hero-footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.hero-footer-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  transition: color 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.hero-footer-link:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-footer-sep {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.8rem;
+}
+
+.hero-footer-copy {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.8rem;
+}

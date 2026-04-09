@@ -18,6 +18,7 @@ import Analytics from './pages/Analytics'
 import Auctions from './pages/Auctions'
 import Friends from './pages/Friends'
 import TwitchIntegration from './pages/TwitchIntegration'
+import Legal from './pages/Legal'
 import NotificationBell from './components/NotificationBell'
 import Tutorial from './components/Tutorial'
 import { api } from './config/api'
@@ -220,6 +221,9 @@ function AppInner() {
                         <span className="nav-more-icon">&#9881;</span> Admin
                       </button>
                     )}
+                    <button onClick={() => { setCurrentPage('legal'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#9878;</span> Mentions Legales
+                    </button>
                     <div className="nav-more-divider" />
                     <button onClick={handleLogout} className="nav-more-logout">
                       <span className="nav-more-icon">&#128682;</span> Deconnexion
@@ -233,7 +237,9 @@ function AppInner() {
       </header>
 
       <main className="app-main">
-        {user ? (
+        {currentPage === 'legal' ? (
+          <Legal onBack={() => setCurrentPage(user ? 'dashboard' : 'home')} />
+        ) : user ? (
           currentPage === 'shop' ? (
             <Shop
               onBack={() => setCurrentPage('dashboard')}
@@ -276,7 +282,7 @@ function AppInner() {
             />
           )
         ) : (
-          <HeroSection onLogin={handleTwitchLogin} />
+          <HeroSection onLogin={handleTwitchLogin} onNavigate={setCurrentPage} />
         )}
       </main>
     </div>
@@ -286,7 +292,7 @@ function AppInner() {
 /* ==============================
    HERO SECTION (Landing Page)
    ============================== */
-function HeroSection({ onLogin }) {
+function HeroSection({ onLogin, onNavigate }) {
   const [hoveredRole, setHoveredRole] = useState(null)
 
   return (
@@ -395,6 +401,26 @@ function HeroSection({ onLogin }) {
           <p>Transformez vos doublons en coins</p>
         </div>
       </div>
+
+      {/* Footer legal */}
+      <footer className="hero-footer">
+        <div className="hero-footer-links">
+          <button className="hero-footer-link" onClick={() => onNavigate('legal')}>
+            Mentions Legales
+          </button>
+          <span className="hero-footer-sep">|</span>
+          <button className="hero-footer-link" onClick={() => onNavigate('legal')}>
+            CGU
+          </button>
+          <span className="hero-footer-sep">|</span>
+          <button className="hero-footer-link" onClick={() => onNavigate('legal')}>
+            Politique de Confidentialite
+          </button>
+        </div>
+        <p className="hero-footer-copy">
+          &copy; {new Date().getFullYear()} StreamCards — Projet non commercial. Aucune donnee vendue.
+        </p>
+      </footer>
     </div>
   )
 }
