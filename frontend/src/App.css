@@ -65,7 +65,7 @@
 .nav-right-group {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 1rem;
 }
 
 /* Profile button in navbar */
