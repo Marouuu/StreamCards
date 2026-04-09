@@ -9,13 +9,14 @@ router.get('/', authenticate, async (req, res) => {
   try {
     const streamerId = req.user.twitchId;
 
-    // Verify user is a streamer
+    // Verify user is a streamer + check premium
     const userCheck = await pool.query(
-      `SELECT is_streamer FROM users WHERE twitch_id = $1`, [streamerId]
+      `SELECT is_streamer, subscription_type, subscription_status FROM users WHERE twitch_id = $1`, [streamerId]
     );
     if (!userCheck.rows[0]?.is_streamer) {
       return res.status(403).json({ error: 'Streamer uniquement' });
     }
+    const isStreamerPremium = userCheck.rows[0].subscription_status === 'active' && userCheck.rows[0].subscription_type === 'streamer_premium';
 
     // Total cards created
     const totalCards = await pool.query(
@@ -130,7 +131,9 @@ router.get('/', authenticate, async (req, res) => {
       [streamerId]
     );
 
-    res.json({
+    // Free tier: overview only. Premium: full analytics.
+    const response = {
+      isStreamerPremium,
       overview: {
         totalCards: parseInt(totalCards.rows[0].c),
         totalPacks: parseInt(totalPacks.rows[0].c),
@@ -140,11 +143,16 @@ router.get('/', authenticate, async (req, res) => {
         coinsSpent: parseInt(coinsSpent.rows[0].total),
         marketVolume: parseInt(marketVolume.rows[0].total),
       },
-      popularCards: popularCards.rows,
-      rarityDistribution: rarityDist.rows,
-      recentActivity: recentActivity.rows,
-      completionRates: completionRates.rows[0] || { complete: 0, half: 0, started: 0 },
-    });
+    };
+
+    if (isStreamerPremium) {
+      response.popularCards = popularCards.rows;
+      response.rarityDistribution = rarityDist.rows;
+      response.recentActivity = recentActivity.rows;
+      response.completionRates = completionRates.rows[0] || { complete: 0, half: 0, started: 0 };
+    }
+
+    res.json(response);
   } catch (error) {
     console.error('Analytics error:', error);
     res.status(500).json({ error: error.message });

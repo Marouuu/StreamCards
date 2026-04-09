@@ -61,17 +61,26 @@ function CardEditor({ packId, packName, onBack }) {
   const [cards, setCards] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState(null);
   const [form, setForm] = useState({ ...DEFAULT_CARD });
+  const [imageRightsAccepted, setImageRightsAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(true);
+  const [limits, setLimits] = useState(null);
 
-  useEffect(() => { loadCards(); }, [packId]);
+  useEffect(() => { loadCards(); loadLimits(); }, [packId]);
 
   const loadCards = async () => {
     setLoading(true);
     const data = await api.getPackCards(packId);
     setCards(data);
     setLoading(false);
+  };
+
+  const loadLimits = async () => {
+    try {
+      const data = await api.getPackLimits();
+      setLimits(data);
+    } catch { /* ignore */ }
   };
 
   const showMsg = (type, text) => {
@@ -82,6 +91,7 @@ function CardEditor({ packId, packName, onBack }) {
   const handleNew = () => {
     setSelectedCardId(null);
     setForm({ ...DEFAULT_CARD });
+    setImageRightsAccepted(false);
   };
 
   const handleSelect = (card) => {
@@ -98,6 +108,7 @@ function CardEditor({ packId, packName, onBack }) {
       effect_color: card.effect_color || '#ffffff',
       effect_intensity: card.effect_intensity ?? 50,
     });
+    setImageRightsAccepted(false);
   };
 
   const handleChange = (field, value) => {
@@ -113,6 +124,10 @@ function CardEditor({ packId, packName, onBack }) {
   };
 
   const handleSave = async () => {
+    if (!imageRightsAccepted) {
+      showMsg('error', 'Vous devez accepter la responsabilite des droits d\'auteur des images.');
+      return;
+    }
     setSaving(true);
     try {
       const data = { ...form };
@@ -172,11 +187,11 @@ function CardEditor({ packId, packName, onBack }) {
         <button className="ce-back-btn" onClick={onBack}>←</button>
         <h1>Cartes — {packName}</h1>
         <div className="ce-header-right">
-          <span className="ce-count">{cards.length}/30 cartes</span>
+          <span className="ce-count">{cards.length}/{limits ? limits.maxCardsPerPack : 30} cartes</span>
           <button
-            className="ce-new-btn"
+            className={`ce-new-btn${limits && cards.length >= limits.maxCardsPerPack ? ' ce-new-btn-disabled' : ''}`}
             onClick={handleNew}
-            disabled={cards.length >= 30}
+            disabled={cards.length >= (limits ? limits.maxCardsPerPack : 30)}
           >
             + Nouvelle Carte
           </button>
@@ -298,25 +313,30 @@ function CardEditor({ packId, packName, onBack }) {
                 <div key={cat.category} className="ce-effect-category">
                   {cat.category !== 'Aucun' && <div className="ce-effect-category-label">{cat.category}</div>}
                   <div className="ce-effect-category-items">
-                    {cat.effects.map(e => (
-                      <button
-                        key={e.value}
-                        className={`ce-effect-btn ${form.effect === e.value ? 'active' : ''}`}
-                        onClick={() => handleChange('effect', e.value)}
-                        title={e.label}
-                      >
-                        <span className="ce-effect-icon">{e.icon}</span>
-                        <span className="ce-effect-label">{e.label}</span>
-                      </button>
-                    ))}
+                    {cat.effects.map(e => {
+                      const isLocked = limits && limits.allowedEffects && !limits.allowedEffects.includes(e.value);
+                      return (
+                        <button
+                          key={e.value}
+                          className={`ce-effect-btn ${form.effect === e.value ? 'active' : ''} ${isLocked ? 'ce-effect-locked' : ''}`}
+                          onClick={() => !isLocked && handleChange('effect', e.value)}
+                          title={isLocked ? 'Streamer Premium requis' : e.label}
+                          disabled={isLocked}
+                        >
+                          <span className="ce-effect-icon">{e.icon}</span>
+                          <span className="ce-effect-label">{e.label}</span>
+                          {isLocked && <span className="ce-lock-icon">&#128274;</span>}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
             </div>
             {form.effect !== 'none' && (
-              <div className="ce-effect-options">
+              <div className="ce-effect-options" style={limits && !limits.colorCustomization ? { opacity: 0.4, pointerEvents: 'none' } : undefined}>
                 <label className="ce-color-pick">
-                  <span>Couleur de l'effet</span>
+                  <span>Couleur de l'effet {limits && !limits.colorCustomization && <span className="ce-premium-tag">Premium</span>}</span>
                   <div className="ce-color-input-wrap">
                     <input type="color" value={form.effect_color} onChange={e => handleChange('effect_color', e.target.value)} />
                     <span className="ce-color-hex">{form.effect_color}</span>
@@ -337,8 +357,23 @@ function CardEditor({ packId, packName, onBack }) {
             )}
           </div>
 
+          <div className="ce-rights-section">
+            <label className="ce-rights-checkbox">
+              <input
+                type="checkbox"
+                checked={imageRightsAccepted}
+                onChange={e => setImageRightsAccepted(e.target.checked)}
+              />
+              <span>
+                Je certifie detenir les droits d'auteur ou une licence valide sur les images
+                utilisees pour cette carte. J'assume l'entiere responsabilite en cas de violation
+                des droits de propriete intellectuelle de tiers.
+              </span>
+            </label>
+          </div>
+
           <div className="ce-actions">
-            <button className="ce-save-btn" onClick={handleSave} disabled={saving}>
+            <button className="ce-save-btn" onClick={handleSave} disabled={saving || !imageRightsAccepted}>
               {saving ? 'Enregistrement...' : selectedCardId ? 'Mettre à jour' : 'Créer la carte'}
             </button>
             {selectedCardId && (

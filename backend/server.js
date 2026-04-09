@@ -25,6 +25,7 @@ import analyticsRoutes from './routes/analytics.routes.js';
 import auctionsRoutes from './routes/auctions.routes.js';
 import friendsRoutes from './routes/friends.routes.js';
 import twitchEventSubRoutes from './routes/twitch-eventsub.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -90,11 +91,11 @@ const messageLimiter = rateLimit({
 });
 app.use('/api/friends/messages', messageLimiter);
 
-// Capture raw body for Twitch webhook signature verification
+// Capture raw body for webhook signature verification (Twitch + Stripe)
 app.use(express.json({
   limit: '1mb',
   verify: (req, res, buf) => {
-    if (req.originalUrl === '/api/twitch/eventsub/callback') {
+    if (req.originalUrl === '/api/twitch/eventsub/callback' || req.originalUrl === '/api/subscription/webhook') {
       req.rawBody = buf;
     }
   },
@@ -138,6 +139,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/auctions', auctionsRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/twitch/eventsub', twitchEventSubRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 // Global error handler — prevents leaking internal errors to clients
 app.use((err, req, res, next) => {

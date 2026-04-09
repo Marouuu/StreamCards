@@ -60,7 +60,10 @@ export default function Profile({ onBack, userId, isOwnProfile }) {
       <div className="profile-user-card">
         <img src={user.profileImageUrl || user.profile_image_url} alt="" className="profile-avatar" />
         <div className="profile-user-info">
-          <h3>{user.displayName || user.display_name}</h3>
+          <h3>
+            {user.displayName || user.display_name}
+            {user.isPremium && <span className="profile-premium-badge" title="StreamCards+">&#11088;</span>}
+          </h3>
           <span className="profile-username">@{user.username}</span>
           {user.isStreamer && <span className="profile-streamer-badge">Streamer</span>}
         </div>

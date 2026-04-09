@@ -18,6 +18,8 @@ import Analytics from './pages/Analytics'
 import Auctions from './pages/Auctions'
 import Friends from './pages/Friends'
 import TwitchIntegration from './pages/TwitchIntegration'
+import Legal from './pages/Legal'
+import Premium from './pages/Premium'
 import NotificationBell from './components/NotificationBell'
 import Tutorial from './components/Tutorial'
 import { api } from './config/api'
@@ -267,6 +269,11 @@ function AppInner() {
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         </span> Profil
                       </button>
+                      <button className={currentPage === 'premium' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('premium'); setMoreMenuOpen(false); }}>
+                        <span className="nav-more-icon">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </span> StreamCards+
+                      </button>
                       {user.isStreamer && (
                         <>
                           <button className={currentPage === 'pack-manager' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('pack-manager'); setMoreMenuOpen(false); }}>
@@ -294,6 +301,11 @@ function AppInner() {
                         </button>
                       )}
                       <div className="nav-more-divider" />
+                      <button onClick={() => { setCurrentPage('legal'); setMoreMenuOpen(false); }}>
+                        <span className="nav-more-icon">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        </span> Mentions Legales
+                      </button>
                       <button onClick={() => { handleLogout(); setMoreMenuOpen(false); }} className="nav-more-logout">
                         <span className="nav-more-icon">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -309,7 +321,11 @@ function AppInner() {
       </header>
 
       <main className="app-main">
-        {user ? (
+        {currentPage === 'legal' ? (
+          <Legal onBack={() => setCurrentPage(user ? 'dashboard' : 'home')} />
+        ) : currentPage === 'premium' && user ? (
+          <Premium onBack={() => setCurrentPage('dashboard')} user={user} />
+        ) : user ? (
           currentPage === 'shop' ? (
             <Shop
               onBack={() => setCurrentPage('dashboard')}
@@ -352,7 +368,7 @@ function AppInner() {
             />
           )
         ) : (
-          <HeroSection onLogin={handleTwitchLogin} />
+          <HeroSection onLogin={handleTwitchLogin} onNavigate={setCurrentPage} />
         )}
       </main>
     </div>
@@ -362,7 +378,7 @@ function AppInner() {
 /* ==============================
    HERO SECTION (Landing Page)
    ============================== */
-function HeroSection({ onLogin }) {
+function HeroSection({ onLogin, onNavigate }) {
   const [hoveredRole, setHoveredRole] = useState(null)
 
   return (
@@ -471,6 +487,26 @@ function HeroSection({ onLogin }) {
           <p>Transformez vos doublons en coins</p>
         </div>
       </div>
+
+      {/* Footer legal */}
+      <footer className="hero-footer">
+        <div className="hero-footer-links">
+          <button className="hero-footer-link" onClick={() => onNavigate('legal')}>
+            Mentions Legales
+          </button>
+          <span className="hero-footer-sep">|</span>
+          <button className="hero-footer-link" onClick={() => onNavigate('legal')}>
+            CGU
+          </button>
+          <span className="hero-footer-sep">|</span>
+          <button className="hero-footer-link" onClick={() => onNavigate('legal')}>
+            Politique de Confidentialite
+          </button>
+        </div>
+        <p className="hero-footer-copy">
+          &copy; {new Date().getFullYear()} StreamCards — Projet non commercial. Aucune donnee vendue.
+        </p>
+      </footer>
     </div>
   )
 }

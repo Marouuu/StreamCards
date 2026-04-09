@@ -31,17 +31,26 @@ function PackManager({ onBack }) {
   const [selectedPackId, setSelectedPackId] = useState(null);
   const [form, setForm] = useState({ ...DEFAULT_FORM });
   const [saving, setSaving] = useState(false);
+  const [imageRightsAccepted, setImageRightsAccepted] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(true);
   const [editingCardsPackId, setEditingCardsPackId] = useState(null);
+  const [limits, setLimits] = useState(null);
 
-  useEffect(() => { loadPacks(); }, []);
+  useEffect(() => { loadPacks(); loadLimits(); }, []);
 
   const loadPacks = async () => {
     setLoading(true);
     const data = await api.getMyPacks();
     setPacks(data);
     setLoading(false);
+  };
+
+  const loadLimits = async () => {
+    try {
+      const data = await api.getPackLimits();
+      setLimits(data);
+    } catch { /* ignore */ }
   };
 
   const showMessage = (type, text) => {
@@ -52,6 +61,7 @@ function PackManager({ onBack }) {
   const handleNewPack = () => {
     setSelectedPackId(null);
     setForm({ ...DEFAULT_FORM, rarity_weights: { ...DEFAULT_WEIGHTS } });
+    setImageRightsAccepted(false);
   };
 
   const handleSelectPack = (pack) => {
@@ -74,6 +84,7 @@ function PackManager({ onBack }) {
       color_background: pack.color_background || '#1a1a2e',
       is_published: pack.is_published || false,
     });
+    setImageRightsAccepted(false);
   };
 
   const handleChange = (field, value) => {
@@ -88,6 +99,10 @@ function PackManager({ onBack }) {
   };
 
   const handleSave = async () => {
+    if (!imageRightsAccepted) {
+      showMessage('error', 'Vous devez accepter la responsabilite des droits d\'auteur des images.');
+      return;
+    }
     setSaving(true);
     try {
       if (selectedPackId) {
@@ -161,8 +176,23 @@ function PackManager({ onBack }) {
       <div className="pm-header">
         {onBack && <button className="pm-back-btn" onClick={onBack}>←</button>}
         <h1>Mes Packs</h1>
-        <button className="pm-new-btn" onClick={handleNewPack}>+ Nouveau Pack</button>
+        {limits && limits.maxPacks && packs.length >= limits.maxPacks ? (
+          <button className="pm-new-btn pm-new-btn-disabled" disabled title="Limite atteinte">
+            + Nouveau Pack ({packs.length}/{limits.maxPacks})
+          </button>
+        ) : (
+          <button className="pm-new-btn" onClick={handleNewPack}>
+            + Nouveau Pack{limits && limits.maxPacks ? ` (${packs.length}/${limits.maxPacks})` : ''}
+          </button>
+        )}
       </div>
+
+      {limits && limits.tier === 'free' && (
+        <div className="pm-upgrade-banner">
+          <span>&#11088;</span>
+          <span>Tier gratuit : {limits.maxPacks} packs max, {limits.maxCardsPerPack} cartes/pack, 3 effets. <strong>Passez a Streamer Premium</strong> pour tout debloquer !</span>
+        </div>
+      )}
 
       {message.text && (
         <div className={`pm-message ${message.type}`}>{message.text}</div>
@@ -171,7 +201,7 @@ function PackManager({ onBack }) {
       <div className="pm-layout">
         {/* Pack List */}
         <div className="pm-sidebar">
-          <h3>Mes packs ({packs.length})</h3>
+          <h3>Mes packs ({packs.length}{limits && limits.maxPacks ? `/${limits.maxPacks}` : ''})</h3>
           <div className="pm-pack-list">
             {packs.map(pack => (
               <div
@@ -312,9 +342,9 @@ function PackManager({ onBack }) {
               )}
             </div>
 
-            <div className="pm-form-section">
-              <h3>Couleurs</h3>
-              <div className="pm-colors">
+            <div className={`pm-form-section${limits && !limits.colorCustomization ? ' pm-section-locked' : ''}`}>
+              <h3>Couleurs {limits && !limits.colorCustomization && <span className="pm-premium-tag">Premium</span>}</h3>
+              <div className="pm-colors" style={limits && !limits.colorCustomization ? { opacity: 0.4, pointerEvents: 'none' } : undefined}>
                 <label className="pm-color-pick">
                   <span>Primaire</span>
                   <div className="pm-color-input-wrap">
@@ -353,8 +383,23 @@ function PackManager({ onBack }) {
               </label>
             </div>
 
+            <div className="pm-form-section">
+              <label className="pm-rights-checkbox">
+                <input
+                  type="checkbox"
+                  checked={imageRightsAccepted}
+                  onChange={e => setImageRightsAccepted(e.target.checked)}
+                />
+                <span>
+                  Je certifie detenir les droits d'auteur ou une licence valide sur les images
+                  utilisees pour ce booster. J'assume l'entiere responsabilite en cas de violation
+                  des droits de propriete intellectuelle de tiers.
+                </span>
+              </label>
+            </div>
+
             <div className="pm-actions">
-              <button className="pm-save-btn" onClick={handleSave} disabled={saving}>
+              <button className="pm-save-btn" onClick={handleSave} disabled={saving || !imageRightsAccepted}>
                 {saving ? 'Enregistrement...' : selectedPackId ? 'Mettre à jour' : 'Créer le pack'}
               </button>
               {selectedPackId && (

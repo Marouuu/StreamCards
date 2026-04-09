@@ -21,11 +21,13 @@ router.get('/', authenticate, async (req, res) => {
             u.display_name,
             u.profile_image_url,
             u.is_streamer,
+            u.subscription_type,
+            u.subscription_status,
             COUNT(uc.id) AS score,
             'cartes' AS score_label
           FROM users u
           LEFT JOIN user_cards uc ON uc.user_id = u.twitch_id
-          GROUP BY u.twitch_id, u.username, u.display_name, u.profile_image_url, u.is_streamer
+          GROUP BY u.twitch_id, u.username, u.display_name, u.profile_image_url, u.is_streamer, u.subscription_type, u.subscription_status
           HAVING COUNT(uc.id) > 0
           ORDER BY score DESC
           LIMIT 50
@@ -41,13 +43,15 @@ router.get('/', authenticate, async (req, res) => {
             u.display_name,
             u.profile_image_url,
             u.is_streamer,
+            u.subscription_type,
+            u.subscription_status,
             COUNT(uc.id) AS score,
             'rares' AS score_label
           FROM users u
           JOIN user_cards uc ON uc.user_id = u.twitch_id
           JOIN card_templates ct ON ct.id = uc.card_template_id
           WHERE ct.rarity IN ('legendary', 'ultra-legendary')
-          GROUP BY u.twitch_id, u.username, u.display_name, u.profile_image_url, u.is_streamer
+          GROUP BY u.twitch_id, u.username, u.display_name, u.profile_image_url, u.is_streamer, u.subscription_type, u.subscription_status
           HAVING COUNT(uc.id) > 0
           ORDER BY score DESC
           LIMIT 50
@@ -63,6 +67,8 @@ router.get('/', authenticate, async (req, res) => {
             u.display_name,
             u.profile_image_url,
             u.is_streamer,
+            u.subscription_type,
+            u.subscription_status,
             u.coins AS score,
             'coins' AS score_label
           FROM users u
@@ -81,6 +87,8 @@ router.get('/', authenticate, async (req, res) => {
             u.display_name,
             u.profile_image_url,
             u.is_streamer,
+            u.subscription_type,
+            u.subscription_status,
             (
               COALESCE(sold.cnt, 0) + COALESCE(bought.cnt, 0)
             ) AS score,
@@ -116,6 +124,7 @@ router.get('/', authenticate, async (req, res) => {
         displayName: row.display_name,
         profileImageUrl: row.profile_image_url,
         isStreamer: row.is_streamer,
+        isPremium: row.subscription_status === 'active' && row.subscription_type !== 'free',
         score: parseInt(row.score),
         scoreLabel: row.score_label,
       })),

@@ -46,9 +46,9 @@ export default function Analytics({ onBack }) {
   }
 
   if (!data) return null;
-  const { overview, popularCards, rarityDistribution, recentActivity, completionRates } = data;
+  const { overview, popularCards, rarityDistribution, recentActivity, completionRates, isStreamerPremium } = data;
 
-  const totalRarity = rarityDistribution.reduce((sum, r) => sum + parseInt(r.count), 0) || 1;
+  const totalRarity = (rarityDistribution || []).reduce((sum, r) => sum + parseInt(r.count), 0) || 1;
 
   return (
     <div className="analytics-page">
@@ -89,91 +89,102 @@ export default function Analytics({ onBack }) {
         </div>
       </div>
 
-      {/* Rarity distribution */}
-      <div className="analytics-section">
-        <h3>Distribution par rarete</h3>
-        <div className="rarity-bars">
-          {rarityDistribution.map(r => (
-            <div key={r.rarity} className="rarity-bar-row">
-              <span className="rarity-bar-label" style={{ color: RARITY_COLORS[r.rarity] }}>
-                {r.rarity}
-              </span>
-              <div className="rarity-bar-track">
-                <div
-                  className="rarity-bar-fill"
-                  style={{
-                    width: `${(parseInt(r.count) / totalRarity) * 100}%`,
-                    background: RARITY_COLORS[r.rarity],
-                  }}
-                />
-              </div>
-              <span className="rarity-bar-count">{parseInt(r.count).toLocaleString()}</span>
+      {isStreamerPremium ? (
+        <>
+          {/* Rarity distribution */}
+          <div className="analytics-section">
+            <h3>Distribution par rarete</h3>
+            <div className="rarity-bars">
+              {(rarityDistribution || []).map(r => (
+                <div key={r.rarity} className="rarity-bar-row">
+                  <span className="rarity-bar-label" style={{ color: RARITY_COLORS[r.rarity] }}>
+                    {r.rarity}
+                  </span>
+                  <div className="rarity-bar-track">
+                    <div
+                      className="rarity-bar-fill"
+                      style={{
+                        width: `${(parseInt(r.count) / totalRarity) * 100}%`,
+                        background: RARITY_COLORS[r.rarity],
+                      }}
+                    />
+                  </div>
+                  <span className="rarity-bar-count">{parseInt(r.count).toLocaleString()}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* Collection completion */}
-      <div className="analytics-section">
-        <h3>Taux de completion</h3>
-        <div className="completion-stats">
-          <div className="completion-stat">
-            <span className="completion-value" style={{ color: '#2ecc71' }}>{completionRates.complete || 0}</span>
-            <span className="completion-label">100% complet</span>
-          </div>
-          <div className="completion-stat">
-            <span className="completion-value" style={{ color: '#f1c40f' }}>{completionRates.half || 0}</span>
-            <span className="completion-label">50-99%</span>
-          </div>
-          <div className="completion-stat">
-            <span className="completion-value" style={{ color: '#e74c3c' }}>{completionRates.started || 0}</span>
-            <span className="completion-label">1-49%</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Popular cards */}
-      <div className="analytics-section">
-        <h3>Cartes les plus populaires</h3>
-        <div className="popular-cards-grid">
-          {popularCards.map((card, i) => (
-            <div key={card.id} className="popular-card-item">
-              <span className="popular-rank">#{i + 1}</span>
-              <CardPreview card={card} size="tiny" />
-              <div className="popular-card-info">
-                <span className="popular-card-name">{card.name}</span>
-                <span className="popular-card-stats">
-                  {parseInt(card.copies)} copies &middot; {parseInt(card.unique_owners)} joueurs
-                </span>
+          {/* Collection completion */}
+          <div className="analytics-section">
+            <h3>Taux de completion</h3>
+            <div className="completion-stats">
+              <div className="completion-stat">
+                <span className="completion-value" style={{ color: '#2ecc71' }}>{completionRates?.complete || 0}</span>
+                <span className="completion-label">100% complet</span>
+              </div>
+              <div className="completion-stat">
+                <span className="completion-value" style={{ color: '#f1c40f' }}>{completionRates?.half || 0}</span>
+                <span className="completion-label">50-99%</span>
+              </div>
+              <div className="completion-stat">
+                <span className="completion-value" style={{ color: '#e74c3c' }}>{completionRates?.started || 0}</span>
+                <span className="completion-label">1-49%</span>
               </div>
             </div>
-          ))}
-          {popularCards.length === 0 && (
-            <p className="analytics-empty">Aucune carte collectee pour le moment</p>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* Recent activity */}
-      <div className="analytics-section">
-        <h3>Activite recente</h3>
-        <div className="activity-list">
-          {recentActivity.map((a, i) => (
-            <div key={i} className="activity-item">
-              {a.user_image && <img src={a.user_image} alt="" className="activity-avatar" />}
-              <div className="activity-info">
-                <span className="activity-user">{a.user_name}</span>
-                <span className="activity-action">a ouvert <strong>{a.pack_name}</strong></span>
-              </div>
-              <span className="activity-coins">{a.coins_spent} coins</span>
-              <span className="activity-time">{formatTime(a.opened_at)}</span>
+          {/* Popular cards */}
+          <div className="analytics-section">
+            <h3>Cartes les plus populaires</h3>
+            <div className="popular-cards-grid">
+              {(popularCards || []).map((card, i) => (
+                <div key={card.id} className="popular-card-item">
+                  <span className="popular-rank">#{i + 1}</span>
+                  <CardPreview card={card} size="tiny" />
+                  <div className="popular-card-info">
+                    <span className="popular-card-name">{card.name}</span>
+                    <span className="popular-card-stats">
+                      {parseInt(card.copies)} copies &middot; {parseInt(card.unique_owners)} joueurs
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {(!popularCards || popularCards.length === 0) && (
+                <p className="analytics-empty">Aucune carte collectee pour le moment</p>
+              )}
             </div>
-          ))}
-          {recentActivity.length === 0 && (
-            <p className="analytics-empty">Aucune activite recente</p>
-          )}
+          </div>
+
+          {/* Recent activity */}
+          <div className="analytics-section">
+            <h3>Activite recente</h3>
+            <div className="activity-list">
+              {(recentActivity || []).map((a, i) => (
+                <div key={i} className="activity-item">
+                  {a.user_image && <img src={a.user_image} alt="" className="activity-avatar" />}
+                  <div className="activity-info">
+                    <span className="activity-user">{a.user_name}</span>
+                    <span className="activity-action">a ouvert <strong>{a.pack_name}</strong></span>
+                  </div>
+                  <span className="activity-coins">{a.coins_spent} coins</span>
+                  <span className="activity-time">{formatTime(a.opened_at)}</span>
+                </div>
+              ))}
+              {(!recentActivity || recentActivity.length === 0) && (
+                <p className="analytics-empty">Aucune activite recente</p>
+              )}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="analytics-premium-gate">
+          <div className="analytics-gate-icon">&#128274;</div>
+          <h3>Analytics avances</h3>
+          <p>Distribution par rarete, cartes populaires, taux de completion et activite recente sont reserves aux abonnes <strong>Streamer Premium</strong>.</p>
+          <p className="analytics-gate-sub">Passez a Streamer Premium pour debloquer toutes les analytics.</p>
         </div>
-      </div>
+      )}
     </div>
   );
 }

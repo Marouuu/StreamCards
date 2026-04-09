@@ -238,6 +238,15 @@ export const api = {
   getMessages: (friendId, limit = 50, before) => authFetch(`/friends/messages/${friendId}?limit=${limit}${before ? '&before=' + before : ''}`),
   sendMessage: (friendId, content) => authFetch(`/friends/messages/${friendId}`, { method: 'POST', body: JSON.stringify({ content }) }),
   getUnreadMessages: () => authFetch('/friends/unread'),
+
+  // Pack limits (streamer tier)
+  getPackLimits: () => authFetch('/packs/limits'),
+
+  // Subscription / Premium
+  getSubscriptionStatus: () => authFetch('/subscription/status'),
+  getStreamerTier: () => authFetch('/subscription/streamer-tier'),
+  createCheckout: (type) => authFetch('/subscription/create-checkout', { method: 'POST', body: JSON.stringify({ type }) }),
+  getPortalUrl: () => authFetch('/subscription/portal', { method: 'POST' }),
 };
 
 export default api;

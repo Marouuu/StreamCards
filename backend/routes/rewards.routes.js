@@ -9,6 +9,7 @@ const router = express.Router();
 const DAILY_CLAIM_BASE = 100;
 const STREAK_BONUS_PER_DAY = 25;   // Extra per consecutive day
 const MAX_STREAK_BONUS = 250;       // Cap at 10-day streak (100 + 250 = 350 max)
+const PREMIUM_DAILY_BONUS = 100;    // Extra coins for premium subscribers
 
 const QUESTS = [
   {
@@ -68,9 +69,9 @@ router.get('/', authenticate, async (req, res) => {
     const twitchId = req.user.twitchId;
     const { start, end } = getTodayBounds();
 
-    // Get user reward info
+    // Get user reward info + premium status
     const userResult = await pool.query(
-      'SELECT last_daily_claim, daily_streak FROM users WHERE twitch_id = $1',
+      'SELECT last_daily_claim, daily_streak, subscription_type, subscription_status FROM users WHERE twitch_id = $1',
       [twitchId]
     );
 
@@ -78,11 +79,13 @@ router.get('/', authenticate, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { last_daily_claim, daily_streak } = userResult.rows[0];
+    const { last_daily_claim, daily_streak, subscription_type, subscription_status } = userResult.rows[0];
+    const isPremium = subscription_status === 'active' && subscription_type !== 'free';
+    const premiumBonus = isPremium ? PREMIUM_DAILY_BONUS : 0;
     const alreadyClaimed = last_daily_claim && new Date(last_daily_claim) >= start;
     const currentStreak = daily_streak || 0;
     const streakBonus = Math.min(currentStreak * STREAK_BONUS_PER_DAY, MAX_STREAK_BONUS);
-    const dailyReward = DAILY_CLAIM_BASE + streakBonus;
+    const dailyReward = DAILY_CLAIM_BASE + streakBonus + premiumBonus;
 
     // Get quest progress for today
     // 1. Boosters opened today
@@ -158,6 +161,8 @@ router.get('/', authenticate, async (req, res) => {
         reward: dailyReward,
         streak: currentStreak,
         streakBonus,
+        premiumBonus,
+        isPremium,
         nextStreakBonus: Math.min((currentStreak + 1) * STREAK_BONUS_PER_DAY, MAX_STREAK_BONUS),
       },
       quests,
@@ -178,7 +183,7 @@ router.post('/claim-daily', authenticate, async (req, res) => {
 
     // Lock user row
     const userResult = await pool.query(
-      'SELECT coins, last_daily_claim, daily_streak FROM users WHERE twitch_id = $1 FOR UPDATE',
+      'SELECT coins, last_daily_claim, daily_streak, subscription_type, subscription_status FROM users WHERE twitch_id = $1 FOR UPDATE',
       [twitchId]
     );
 
@@ -187,7 +192,9 @@ router.post('/claim-daily', authenticate, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { coins, last_daily_claim, daily_streak } = userResult.rows[0];
+    const { coins, last_daily_claim, daily_streak, subscription_type, subscription_status } = userResult.rows[0];
+    const isPremium = subscription_status === 'active' && subscription_type !== 'free';
+    const premiumBonus = isPremium ? PREMIUM_DAILY_BONUS : 0;
 
     // Check already claimed today
     if (last_daily_claim && new Date(last_daily_claim) >= start) {
@@ -202,7 +209,7 @@ router.post('/claim-daily', authenticate, async (req, res) => {
     const newStreak = wasYesterday ? (daily_streak || 0) + 1 : 1;
 
     const streakBonus = Math.min((newStreak - 1) * STREAK_BONUS_PER_DAY, MAX_STREAK_BONUS);
-    const reward = DAILY_CLAIM_BASE + streakBonus;
+    const reward = DAILY_CLAIM_BASE + streakBonus + premiumBonus;
     const newCoins = coins + reward;
 
     await pool.query(
@@ -213,7 +220,7 @@ router.post('/claim-daily', authenticate, async (req, res) => {
     await pool.query(
       `INSERT INTO transactions (user_id, type, amount, balance_after, description)
        VALUES ($1, 'reward', $2, $3, $4)`,
-      [twitchId, reward, newCoins, `Recompense quotidienne (serie: ${newStreak}j)`]
+      [twitchId, reward, newCoins, `Recompense quotidienne (serie: ${newStreak}j)${premiumBonus ? ' + bonus premium' : ''}`]
     );
 
     await pool.query('COMMIT');

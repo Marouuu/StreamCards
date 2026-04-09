@@ -243,3 +243,39 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Premium gate */
+.analytics-premium-gate {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.analytics-gate-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.analytics-premium-gate h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.analytics-premium-gate p {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  max-width: 500px;
+  margin: 0 auto 0.5rem;
+  line-height: 1.6;
+}
+
+.analytics-premium-gate strong {
+  color: #a78bfa;
+}
+
+.analytics-gate-sub {
+  color: var(--color-text-muted) !important;
+  font-size: 0.85rem !important;
+}

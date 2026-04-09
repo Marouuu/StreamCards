@@ -378,6 +378,35 @@
   font-weight: 500;
 }
 
+/* Rights checkbox */
+.pm-rights-checkbox {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 0.8rem !important;
+  cursor: pointer;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+}
+
+.pm-rights-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  accent-color: #8b5cf6;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.pm-rights-checkbox span {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.82rem !important;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
 /* Action buttons */
 .pm-actions {
   display: flex;
@@ -563,4 +592,39 @@
   .pm-pack-item-name {
     max-width: 120px;
   }
+}
+
+/* Upgrade banner */
+.pm-upgrade-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.2rem;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.pm-upgrade-banner strong {
+  color: #a78bfa;
+}
+
+.pm-new-btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+.pm-premium-tag {
+  display: inline-block;
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+  margin-left: 6px;
+  vertical-align: middle;
 }
