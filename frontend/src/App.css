@@ -50,8 +50,124 @@
 
 .user-info {
   display: flex;
-  gap: 1.5rem;
+  gap: 0;
   align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.nav-left-group {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.nav-right-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Profile button in navbar */
+.nav-profile-wrapper {
+  position: relative;
+}
+
+.nav-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+  padding-right: 0.6rem;
+}
+
+.nav-profile-btn:hover, .nav-profile-open {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.25);
+}
+
+.nav-profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nav-profile-fallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.nav-chevron {
+  transition: transform 0.2s;
+  opacity: 0.6;
+}
+
+.nav-profile-open .nav-chevron {
+  transform: rotate(180deg);
+}
+
+/* Dropdown user header */
+.nav-dropdown-user {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 10px 14px;
+}
+
+.dropdown-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dropdown-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown-user-name {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.dropdown-user-coins {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #fbbf24;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.dropdown-user-coins svg {
+  color: #fbbf24;
+}
+
+/* Section labels in dropdown */
+.nav-dropdown-section-label {
+  padding: 6px 14px 2px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.3);
 }
 
 .user-avatar {
@@ -112,6 +228,9 @@
   outline: none;
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .casino-btn {
@@ -265,40 +384,24 @@
 .auction-nav-btn:focus { outline: none; border: none; }
 
 /* ── "More" dropdown ── */
-.nav-more-wrapper {
-  position: relative;
-}
-.nav-more-btn {
-  padding: 0.6rem;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 10px;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-.nav-more-btn:hover, .nav-more-open {
-  background: rgba(255,255,255,0.2);
-}
 .nav-more-dropdown {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 200px;
-  background: rgba(20, 20, 40, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 14px;
+  width: 230px;
+  background: rgba(20, 20, 40, 0.97);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
   padding: 6px;
   z-index: 1000;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-  animation: moreSlideIn 0.15s ease;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: moreSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 @keyframes moreSlideIn {
   from { opacity: 0; transform: translateY(-6px); }
@@ -333,6 +436,9 @@
   width: 20px;
   text-align: center;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .nav-more-divider {
   height: 1px;
@@ -347,16 +453,11 @@
   background: rgba(231, 76, 60, 0.1) !important;
 }
 
-/* Mobile-only dropdown items (hidden by default, shown < 520px) */
-.nav-more-mobile-only {
-  display: none !important;
-}
-
-@media (max-width: 520px) {
-  .nav-more-mobile-only {
-    display: flex !important;
-  }
-}
+/* Dropdown scrollbar */
+.nav-more-dropdown::-webkit-scrollbar { width: 4px; }
+.nav-more-dropdown::-webkit-scrollbar-track { background: transparent; }
+.nav-more-dropdown::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+.nav-more-dropdown { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
 
 /* Active nav indicator */
 .nav-active {
@@ -418,6 +519,9 @@
 
 .logo-icon {
   font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  color: #c4b5fd;
 }
 
 .logo-text {
@@ -750,53 +854,22 @@
    RESPONSIVE — Header & Nav
    ============================== */
 
-/* Tablet: stack nav buttons into 2 rows */
-@media (max-width: 1100px) {
-  .app-header {
-    flex-wrap: wrap;
-    padding: 1rem 1.2rem;
-    gap: 0.8rem;
-  }
-
-  .user-info {
-    gap: 0.6rem;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-}
-
-/* Mobile: compact header */
 @media (max-width: 768px) {
   .app-header {
     padding: 0.8rem 1rem;
-    gap: 0.5rem;
   }
 
   .app-logo {
     gap: 0.3rem;
   }
 
-  .logo-icon {
-    font-size: 1.3rem;
+  .logo-icon svg {
+    width: 22px;
+    height: 22px;
   }
 
   .logo-text {
     font-size: 1.3rem;
-  }
-
-  .user-info {
-    gap: 0.4rem;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .user-welcome {
-    display: none;
-  }
-
-  .user-avatar {
-    width: 32px;
-    height: 32px;
   }
 
   .coins-btn {
@@ -804,34 +877,48 @@
     font-size: 0.78rem;
   }
 
-  .shop-btn,
-  .collection-btn,
-  .market-btn,
-  .trades-btn,
-  .auction-nav-btn {
-    padding: 0.4rem 0.7rem;
-    font-size: 0.72rem;
-    border-radius: 8px;
+  .shop-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-profile-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .nav-profile-fallback {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
   }
 
   .nav-more-dropdown {
-    width: 180px;
-    right: -10px;
+    width: 220px;
+    right: -8px;
   }
 }
 
-/* Small mobile: hide secondary nav, rely on "more" menu */
-@media (max-width: 520px) {
-  .market-btn,
-  .trades-btn,
-  .auction-nav-btn {
-    display: none;
+@media (max-width: 480px) {
+  .shop-btn span:last-child,
+  .shop-btn {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.6rem;
+    letter-spacing: 0;
   }
 
-  .shop-btn,
-  .collection-btn {
+  .coins-btn {
     padding: 0.35rem 0.6rem;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
+  }
+
+  .nav-left-group {
+    gap: 0.5rem;
+  }
+
+  .logo-text {
+    font-size: 1.1rem;
   }
 }
 

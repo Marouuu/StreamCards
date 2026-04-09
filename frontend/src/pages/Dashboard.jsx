@@ -11,6 +11,9 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
   const [loading, setLoading] = useState(true);
   const [addingCoins, setAddingCoins] = useState(false);
   const [streamerSearch, setStreamerSearch] = useState('');
+  const [collectionStats, setCollectionStats] = useState(null);
+  const [rewards, setRewards] = useState(null);
+  const [achievements, setAchievements] = useState(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -33,6 +36,24 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
         } catch (error) {
           console.error('Error fetching boosters:', error);
         }
+
+        // Fetch collection progress
+        try {
+          const progress = await api.getCollectionProgress();
+          setCollectionStats(progress);
+        } catch {}
+
+        // Fetch rewards/quests status
+        try {
+          const rewardsData = await api.getRewards();
+          setRewards(rewardsData);
+        } catch {}
+
+        // Fetch achievements
+        try {
+          const achievData = await api.getAchievements();
+          setAchievements(achievData);
+        } catch {}
       } else {
         setLoading(false);
       }
@@ -137,10 +158,42 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
           <h2>{user?.displayName || user?.username}</h2>
           <div className="user-stats">
             <div className="stat-item">
+              <span className="stat-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h8" opacity="0.7"/></svg>
+              </span>
               <span className="stat-label">Coins</span>
               <span className="stat-value">{(user?.coins || 0).toLocaleString()}</span>
             </div>
+            <div className="stat-item">
+              <span className="stat-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </span>
+              <span className="stat-label">Cartes</span>
+              <span className="stat-value">{collectionStats?.totalCards || user?.totalCards || 0}</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </span>
+              <span className="stat-label">Uniques</span>
+              <span className="stat-value">{collectionStats?.uniqueCards || user?.uniqueCards || 0}</span>
+            </div>
           </div>
+
+          {/* Collection progress bar */}
+          {collectionStats && collectionStats.totalAvailable > 0 && (
+            <div className="collection-progress">
+              <div className="progress-header">
+                <span className="progress-label">Collection</span>
+                <span className="progress-percent">{Math.round((collectionStats.uniqueCards / collectionStats.totalAvailable) * 100)}%</span>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: `${Math.min(100, (collectionStats.uniqueCards / collectionStats.totalAvailable) * 100)}%` }} />
+              </div>
+              <span className="progress-detail">{collectionStats.uniqueCards} / {collectionStats.totalAvailable}</span>
+            </div>
+          )}
+
           {user?.isAdmin && (
             <button
               className="add-coins-btn"
@@ -152,12 +205,87 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
           )}
         </div>
 
+        {/* Quick Actions */}
+        <div className="quick-actions-card">
+          <h3 className="quick-actions-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Actions rapides
+          </h3>
+          <div className="quick-actions-grid">
+            <button className="quick-action-btn" onClick={() => onNavigate && onNavigate('collection')}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>Collection</span>
+            </button>
+            <button className="quick-action-btn" onClick={() => onNavigate && onNavigate('trades')}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+              <span>Echanges</span>
+            </button>
+            <button className="quick-action-btn" onClick={() => onNavigate && onNavigate('rewards')}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>Quetes</span>
+            </button>
+            <button className="quick-action-btn" onClick={() => onNavigate && onNavigate('marketplace')}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+              <span>Marche</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Achievements summary */}
+        {achievements && achievements.achievements && (
+          <div className="achievements-summary-card" onClick={() => onNavigate && onNavigate('achievements')}>
+            <h3 className="achievements-summary-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+              Succes
+            </h3>
+            <div className="achievements-summary-stats">
+              <span className="achievements-unlocked">
+                {achievements.achievements.filter(a => a.unlocked).length}
+              </span>
+              <span className="achievements-separator">/</span>
+              <span className="achievements-total">{achievements.achievements.length}</span>
+            </div>
+            <div className="achievements-summary-bar">
+              <div className="achievements-summary-fill" style={{
+                width: `${achievements.achievements.length > 0 ? (achievements.achievements.filter(a => a.unlocked).length / achievements.achievements.length) * 100 : 0}%`
+              }} />
+            </div>
+            <span className="achievements-summary-hint">Voir tous les succes →</span>
+          </div>
+        )}
+
+        {/* Quests summary */}
+        {rewards && rewards.quests && rewards.quests.length > 0 && (
+          <div className="quests-summary-card">
+            <h3 className="quests-summary-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Quetes en cours
+            </h3>
+            <div className="quests-list">
+              {rewards.quests.filter(q => !q.claimed).slice(0, 3).map((quest, i) => (
+                <div key={i} className="quest-mini-item">
+                  <div className="quest-mini-info">
+                    <span className="quest-mini-name">{quest.title || quest.description}</span>
+                    <div className="quest-mini-bar">
+                      <div className="quest-mini-fill" style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }} />
+                    </div>
+                  </div>
+                  <span className="quest-mini-progress">{quest.progress}/{quest.target}</span>
+                </div>
+              ))}
+            </div>
+            <button className="quests-see-all" onClick={() => onNavigate && onNavigate('rewards')}>
+              Voir toutes les quetes →
+            </button>
+          </div>
+        )}
+
         {/* Streamer status banner */}
         {user && !user.isStreamer && (
           <div className={`streamer-status-banner ${user.streamerStatus || 'none'}`}>
             {user.streamerStatus === 'pending' ? (
               <div className="status-info">
-                <span className="status-icon">&#9203;</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <div>
                   <strong>Demande en cours</strong>
                   <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.7 }}>
@@ -168,7 +296,7 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
             ) : user.streamerStatus === 'rejected' ? (
               <>
                 <div className="status-info">
-                  <span className="status-icon">&#10060;</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                   <div>
                     <strong>Demande refusee</strong>
                     <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.7 }}>
@@ -183,7 +311,7 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
             ) : (
               <>
                 <div className="status-info">
-                  <span className="status-icon">&#127909;</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                   <span>Vous etes un streamer ? Creez vos propres boosters et cartes !</span>
                 </div>
                 <button className="request-streamer-btn" onClick={onStreamerRequest}>
@@ -198,14 +326,22 @@ function Dashboard({ user: initialUser, onStreamerRequest, onUserUpdate, onNavig
 
       <div className="dashboard-right">
         <div className="dash-shop-header">
-          <h3 className="dash-shop-title">Boosters disponibles</h3>
-          <input
-            type="text"
-            className="dash-search"
-            placeholder="Rechercher un streamer..."
-            value={streamerSearch}
-            onChange={(e) => setStreamerSearch(e.target.value)}
-          />
+          <h3 className="dash-shop-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+            Boosters disponibles
+          </h3>
+          <div className="dash-search-wrapper">
+            <svg className="dash-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              type="text"
+              className="dash-search"
+              placeholder="Rechercher un streamer..."
+              value={streamerSearch}
+              onChange={(e) => setStreamerSearch(e.target.value)}
+            />
+          </div>
         </div>
 
         {filteredGroups.length > 0 ? (

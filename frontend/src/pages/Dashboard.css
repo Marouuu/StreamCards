@@ -88,26 +88,289 @@
 .user-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 0.8rem;
   margin-top: 1.5rem;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem 0.3rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.15rem;
 }
 
 .stat-label {
-  font-size: 0.85rem;
-  opacity: 0.8;
+  font-size: 0.72rem;
+  opacity: 0.6;
   color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: bold;
   color: white;
+}
+
+/* Collection progress bar */
+.collection-progress {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-label {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+}
+
+.progress-percent {
+  font-size: 0.78rem;
+  color: #a78bfa;
+  font-weight: 700;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-detail {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+}
+
+/* Quick Actions */
+.quick-actions-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.2rem;
+}
+
+.quick-actions-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 1rem;
+  margin: 0 0 0.8rem;
+  font-weight: 700;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.8rem 0.5rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.quick-action-btn:hover {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Achievements summary */
+.achievements-summary-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.achievements-summary-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.achievements-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 1rem;
+  margin: 0 0 0.6rem;
+  font-weight: 700;
+}
+
+.achievements-summary-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.achievements-unlocked {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.achievements-separator {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.3);
+  margin: 0 0.2rem;
+}
+
+.achievements-total {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 600;
+}
+
+.achievements-summary-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+}
+
+.achievements-summary-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.achievements-summary-hint {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.35);
+}
+
+/* Quests summary */
+.quests-summary-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.2rem;
+}
+
+.quests-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 1rem;
+  margin: 0 0 0.8rem;
+  font-weight: 700;
+}
+
+.quests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.quest-mini-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.quest-mini-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.quest-mini-name {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quest-mini-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.quest-mini-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #34d399, #10b981);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.quest-mini-progress {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.quests-see-all {
+  margin-top: 0.6rem;
+  padding: 0;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.35);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-family: inherit;
+}
+
+.quests-see-all:hover {
+  color: rgba(255,255,255,0.6);
 }
 
 .add-coins-btn {
@@ -335,19 +598,36 @@
 
 .dash-shop-title {
   color: white;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.dash-search-wrapper {
+  position: relative;
+  min-width: 220px;
+}
+
+.dash-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.3);
+  pointer-events: none;
 }
 
 .dash-search {
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 1rem 0.6rem 2.3rem;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   color: white;
   font-size: 0.9rem;
   outline: none;
-  min-width: 220px;
+  width: 100%;
   transition: all 0.3s ease;
   font-family: inherit;
 }
@@ -359,6 +639,11 @@
 .dash-search:focus {
   border-color: rgba(139, 92, 246, 0.5);
   background: rgba(255, 255, 255, 0.12);
+}
+
+.dash-search:focus + .dash-search-icon,
+.dash-search-wrapper:focus-within .dash-search-icon {
+  color: rgba(139, 92, 246, 0.6);
 }
 
 /* Streamer group */
@@ -657,7 +942,7 @@
     gap: 0.8rem;
   }
 
-  .dash-search {
+  .dash-search-wrapper {
     min-width: 100%;
   }
 
