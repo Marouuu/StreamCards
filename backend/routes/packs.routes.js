@@ -7,6 +7,21 @@ const router = express.Router();
 const VALID_RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'ultra-legendary'];
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
+// ──── Free vs Premium streamer tier limits ────
+const FREE_MAX_PACKS = 3;
+const FREE_MAX_CARDS_PER_PACK = 15;
+const FREE_EFFECTS = ['none', 'shining', 'shadow'];
+const PREMIUM_MAX_CARDS_PER_PACK = 30;
+
+async function isStreamerPremium(twitchId) {
+  const result = await pool.query(
+    'SELECT subscription_type, subscription_status FROM users WHERE twitch_id = $1',
+    [twitchId]
+  );
+  if (result.rows.length === 0) return false;
+  return result.rows[0].subscription_status === 'active' && result.rows[0].subscription_type === 'streamer_premium';
+}
+
 function validatePack(data) {
   const errors = [];
   if (!data.name || data.name.trim().length === 0) errors.push('Name is required');
@@ -27,6 +42,27 @@ function validatePack(data) {
   }
   return errors;
 }
+
+// GET /api/packs/limits — get tier limits for current user
+router.get('/limits', authenticate, async (req, res) => {
+  try {
+    const premium = await isStreamerPremium(req.user.twitchId);
+    const packCount = await pool.query(
+      'SELECT COUNT(*) AS c FROM booster_packs WHERE creator_id = $1',
+      [req.user.twitchId]
+    );
+    res.json({
+      tier: premium ? 'premium' : 'free',
+      maxPacks: premium ? null : FREE_MAX_PACKS,
+      maxCardsPerPack: premium ? PREMIUM_MAX_CARDS_PER_PACK : FREE_MAX_CARDS_PER_PACK,
+      allowedEffects: premium ? null : FREE_EFFECTS,
+      colorCustomization: premium,
+      currentPackCount: parseInt(packCount.rows[0].c),
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get limits' });
+  }
+});
 
 // GET /api/packs — list my packs (with card count)
 router.get('/', authenticate, async (req, res) => {
@@ -71,6 +107,18 @@ router.post('/', authenticate, async (req, res) => {
     const data = req.body;
     const errors = validatePack(data);
     if (errors.length > 0) return res.status(400).json({ error: errors.join(', ') });
+
+    // Check free tier pack limit
+    const premium = await isStreamerPremium(req.user.twitchId);
+    if (!premium) {
+      const packCount = await pool.query(
+        'SELECT COUNT(*) AS c FROM booster_packs WHERE creator_id = $1',
+        [req.user.twitchId]
+      );
+      if (parseInt(packCount.rows[0].c) >= FREE_MAX_PACKS) {
+        return res.status(403).json({ error: `Limite de ${FREE_MAX_PACKS} packs atteinte. Passez a Streamer Premium pour des packs illimites.`, upgradeRequired: true });
+      }
+    }
 
     const defaultWeights = { common: 50, uncommon: 30, rare: 15, epic: 4, legendary: 1 };
 
@@ -228,17 +276,25 @@ router.post('/:packId/cards', authenticate, async (req, res) => {
     if (pack.rows.length === 0) return res.status(404).json({ error: 'Pack not found' });
     if (pack.rows[0].creator_id !== req.user.twitchId) return res.status(403).json({ error: 'Not authorized' });
 
-    // Check card limit
+    // Check card limit (tier-dependent)
+    const premium = await isStreamerPremium(req.user.twitchId);
+    const maxCards = premium ? PREMIUM_MAX_CARDS_PER_PACK : FREE_MAX_CARDS_PER_PACK;
     const countResult = await pool.query(
       'SELECT COUNT(*) FROM card_templates WHERE booster_pack_id = $1',
       [req.params.packId]
     );
-    if (parseInt(countResult.rows[0].count) >= 30) {
-      return res.status(400).json({ error: 'Maximum 30 cards per booster pack' });
+    if (parseInt(countResult.rows[0].count) >= maxCards) {
+      return res.status(400).json({ error: `Maximum ${maxCards} cartes par pack${!premium ? '. Passez a Streamer Premium pour 30 cartes/pack.' : '.'}`, upgradeRequired: !premium });
     }
 
     const data = req.body;
     const errors = validateCard(data);
+
+    // Free tier: restrict effects
+    if (!premium && data.effect && !FREE_EFFECTS.includes(data.effect)) {
+      errors.push(`Effet "${data.effect}" reserve au Streamer Premium. Effets gratuits : ${FREE_EFFECTS.join(', ')}.`);
+    }
+
     if (errors.length > 0) return res.status(400).json({ error: errors.join(', ') });
 
     const result = await pool.query(
@@ -283,6 +339,13 @@ router.put('/:packId/cards/:cardId', authenticate, async (req, res) => {
     const data = req.body;
     const merged = { ...existing.rows[0], ...data };
     const errors = validateCard(merged);
+
+    // Free tier: restrict effects on update too
+    const premium = await isStreamerPremium(req.user.twitchId);
+    if (!premium && data.effect && !FREE_EFFECTS.includes(data.effect)) {
+      errors.push(`Effet "${data.effect}" reserve au Streamer Premium.`);
+    }
+
     if (errors.length > 0) return res.status(400).json({ error: errors.join(', ') });
 
     const result = await pool.query(

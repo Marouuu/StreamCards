@@ -239,6 +239,9 @@ export const api = {
   sendMessage: (friendId, content) => authFetch(`/friends/messages/${friendId}`, { method: 'POST', body: JSON.stringify({ content }) }),
   getUnreadMessages: () => authFetch('/friends/unread'),
 
+  // Pack limits (streamer tier)
+  getPackLimits: () => authFetch('/packs/limits'),
+
   // Subscription / Premium
   getSubscriptionStatus: () => authFetch('/subscription/status'),
   getStreamerTier: () => authFetch('/subscription/streamer-tier'),
