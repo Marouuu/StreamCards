@@ -125,9 +125,11 @@ router.get('/me', async (req, res) => {
     let isStreamer = false;
     let isAdmin = false;
     let streamerStatus = 'none';
+    let subscriptionType = 'free';
+    let subscriptionStatus = 'none';
     try {
       const result = await pool.query(
-        'SELECT coins, is_streamer, is_admin, streamer_status FROM users WHERE twitch_id = $1',
+        'SELECT coins, is_streamer, is_admin, streamer_status, subscription_type, subscription_status FROM users WHERE twitch_id = $1',
         [decoded.twitchId]
       );
       if (result.rows.length > 0) {
@@ -135,10 +137,14 @@ router.get('/me', async (req, res) => {
         isStreamer = result.rows[0].is_streamer;
         isAdmin = result.rows[0].is_admin;
         streamerStatus = result.rows[0].streamer_status || 'none';
+        subscriptionType = result.rows[0].subscription_type || 'free';
+        subscriptionStatus = result.rows[0].subscription_status || 'none';
       }
     } catch {
       // DB unavailable, fall back to JWT coins
     }
+
+    const isPremium = subscriptionStatus === 'active' && subscriptionType !== 'free';
 
     res.json({
       id: decoded.twitchId,
@@ -150,6 +156,9 @@ router.get('/me', async (req, res) => {
       isStreamer,
       isAdmin,
       streamerStatus,
+      subscriptionType,
+      subscriptionStatus,
+      isPremium,
     });
   } catch (error) {
     console.error('Error in /me endpoint:', error);
