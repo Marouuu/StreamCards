@@ -147,8 +147,31 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+// Run migrations
+import { readFileSync } from 'fs';
+
+async function runMigrations() {
+  const migrations = [
+    'migration_achievements.sql',
+  ];
+  for (const file of migrations) {
+    try {
+      const sql = readFileSync(join(__dirname, 'database', file), 'utf8');
+      await pool.query(sql);
+      console.log(`✅ Migration ${file} applied`);
+    } catch (err) {
+      // Ignore if already applied
+      if (!err.message.includes('already exists')) {
+        console.error(`⚠️ Migration ${file}:`, err.message);
+      }
+    }
+  }
+}
+
+runMigrations().then(() => {
+  // Start server
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+  });
 });
 
