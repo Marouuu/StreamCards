@@ -1,11 +1,11 @@
 .dashboard {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 2rem;
-  padding: 2rem;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
   width: 100%;
-  max-width: 100%;
-  margin: 0;
+  max-width: 1600px;
+  margin: 0 auto;
   min-height: calc(100vh - 80px);
 }
 
@@ -641,53 +641,52 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
-.dash-search:focus + .dash-search-icon,
 .dash-search-wrapper:focus-within .dash-search-icon {
   color: rgba(139, 92, 246, 0.6);
 }
 
 /* Streamer group */
 .dash-streamer-group {
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 2rem 2.5rem;
+  border-radius: 16px;
+  padding: 1.5rem;
 }
 
 .dash-streamer-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1.2rem;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .dash-streamer-avatar {
-  width: 56px;
-  height: 56px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .dash-streamer-name {
   color: white;
   font-weight: 700;
-  font-size: 1.5rem;
+  font-size: 1.15rem;
   flex: 1;
 }
 
 .dash-streamer-count {
   color: rgba(255, 255, 255, 0.4);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 /* Boosters row */
 .dash-boosters-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.5rem;
 }
 
@@ -702,6 +701,8 @@
   border-radius: 16px;
   transition: all 0.25s ease;
   cursor: default;
+  width: 240px;
+  flex-shrink: 0;
 }
 
 .dash-booster-card:hover {
@@ -861,8 +862,8 @@
 }
 
 .skeleton-boosters {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.5rem;
 }
 
@@ -874,6 +875,7 @@
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.04);
   border-radius: 16px;
+  width: 240px;
 }
 
 .skeleton-rect {
@@ -951,8 +953,11 @@
   }
 
   .dash-boosters-row {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
+  }
+
+  .dash-booster-card {
+    width: 200px;
   }
 
   .dash-booster-3d {
@@ -978,9 +983,8 @@
     padding: 0.8rem;
   }
 
-  .dash-boosters-row {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.8rem;
+  .dash-booster-card {
+    width: 160px;
   }
 
   .dash-booster-3d {
@@ -991,9 +995,4 @@
   .dash-booster-card {
     padding: 1rem 0.8rem;
   }
-
-  .skeleton-boosters {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
 }
-
