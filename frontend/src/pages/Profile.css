@@ -68,6 +68,12 @@
   padding: 2px 8px; border-radius: 6px;
   font-weight: 700; vertical-align: middle;
 }
+.profile-premium-badge {
+  margin-left: 6px;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.6));
+}
 
 /* Bio */
 .profile-bio-section {

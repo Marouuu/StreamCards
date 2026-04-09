@@ -1,0 +1,361 @@
+.premium-page {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--page-padding);
+  padding-bottom: 4rem;
+}
+
+.premium-back-btn {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: 0.5rem 1.2rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  margin-bottom: 1.5rem;
+}
+
+.premium-back-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+/* Hero */
+.premium-hero {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.premium-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.premium-plus {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 3rem;
+}
+
+.premium-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 1.05rem;
+  margin-top: 0.5rem;
+}
+
+/* Status banner */
+.premium-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: var(--radius-md);
+  margin-bottom: 2rem;
+}
+
+.premium-status-icon {
+  font-size: 1.3rem;
+}
+
+.premium-manage-btn {
+  margin-left: auto;
+  padding: 0.5rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.premium-manage-btn:hover {
+  background: var(--color-surface-hover);
+}
+
+/* Plans */
+.premium-plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.premium-plan-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.premium-plan-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.premium-plan-card.plan-active {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+}
+
+.plan-streamer {
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.plan-streamer:hover {
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+/* Plan header */
+.plan-header {
+  margin-bottom: 1rem;
+}
+
+.plan-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.plan-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-primary-light);
+}
+
+.plan-amount-range {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary-light);
+}
+
+.plan-currency {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.plan-tier-badge {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.plan-desc {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* Perks list */
+.plan-perks {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  flex: 1;
+}
+
+.plan-perk {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.plan-perk:last-child {
+  border-bottom: none;
+}
+
+.perk-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.plan-perk strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.perk-desc {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* Plan buttons */
+.plan-btn {
+  width: 100%;
+  padding: 0.9rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.plan-btn-viewer {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.plan-btn-viewer:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.plan-btn-streamer {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.plan-btn-streamer:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.plan-btn-active {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  cursor: default;
+}
+
+.plan-btn:disabled {
+  opacity: 0.7;
+}
+
+/* Tier pricing table */
+.plan-tiers {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.plan-tiers h4 {
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+.plan-tiers-desc {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.tiers-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.tiers-table th,
+.tiers-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.tiers-table th {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.tiers-table td {
+  color: var(--color-text-secondary);
+}
+
+.tier-current {
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.tier-current td {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* FAQ */
+.premium-faq {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+}
+
+.premium-faq h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.faq-item {
+  margin-bottom: 1.25rem;
+}
+
+.faq-item:last-child {
+  margin-bottom: 0;
+}
+
+.faq-item strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  margin-bottom: 0.3rem;
+}
+
+.faq-item p {
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .premium-page {
+    padding: 1rem;
+  }
+
+  .premium-title {
+    font-size: 2rem;
+  }
+
+  .premium-plans {
+    grid-template-columns: 1fr;
+  }
+
+  .premium-status-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .premium-manage-btn {
+    margin-left: 0;
+  }
+}

@@ -19,6 +19,7 @@ import Auctions from './pages/Auctions'
 import Friends from './pages/Friends'
 import TwitchIntegration from './pages/TwitchIntegration'
 import Legal from './pages/Legal'
+import Premium from './pages/Premium'
 import NotificationBell from './components/NotificationBell'
 import Tutorial from './components/Tutorial'
 import { api } from './config/api'
@@ -221,6 +222,9 @@ function AppInner() {
                         <span className="nav-more-icon">&#9881;</span> Admin
                       </button>
                     )}
+                    <button className={currentPage === 'premium' ? 'nav-more-active' : ''} onClick={() => { setCurrentPage('premium'); setMoreMenuOpen(false); }}>
+                      <span className="nav-more-icon">&#11088;</span> StreamCards+
+                    </button>
                     <button onClick={() => { setCurrentPage('legal'); setMoreMenuOpen(false); }}>
                       <span className="nav-more-icon">&#9878;</span> Mentions Legales
                     </button>
@@ -239,6 +243,8 @@ function AppInner() {
       <main className="app-main">
         {currentPage === 'legal' ? (
           <Legal onBack={() => setCurrentPage(user ? 'dashboard' : 'home')} />
+        ) : currentPage === 'premium' && user ? (
+          <Premium onBack={() => setCurrentPage('dashboard')} user={user} />
         ) : user ? (
           currentPage === 'shop' ? (
             <Shop

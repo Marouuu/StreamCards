@@ -10,7 +10,8 @@ router.get('/:userId', async (req, res) => {
     const { userId } = req.params;
 
     const userResult = await pool.query(
-      `SELECT twitch_id, username, display_name, profile_image_url, bio, is_streamer, created_at
+      `SELECT twitch_id, username, display_name, profile_image_url, bio, is_streamer, created_at,
+              subscription_type, subscription_status
        FROM users WHERE twitch_id = $1`,
       [userId]
     );
@@ -46,6 +47,8 @@ router.get('/:userId', async (req, res) => {
       [userId]
     );
 
+    const isPremium = user.subscription_status === 'active' && user.subscription_type !== 'free';
+
     res.json({
       user: {
         twitchId: user.twitch_id,
@@ -55,6 +58,8 @@ router.get('/:userId', async (req, res) => {
         bio: user.bio,
         isStreamer: user.is_streamer,
         createdAt: user.created_at,
+        isPremium,
+        subscriptionType: user.subscription_type,
       },
       stats: {
         totalCards: parseInt(statsResult.rows[0].total_cards),
@@ -74,13 +79,21 @@ router.put('/showcase', authenticate, async (req, res) => {
     const userId = req.user.twitchId;
     const { cards } = req.body; // [{ userCardId, position }]
 
-    if (!Array.isArray(cards) || cards.length > 5) {
-      return res.status(400).json({ error: 'Maximum 5 cartes' });
+    // Premium users get 7 showcase slots, free users get 5
+    const premiumResult = await pool.query(
+      'SELECT subscription_type, subscription_status FROM users WHERE twitch_id = $1',
+      [userId]
+    );
+    const isPremium = premiumResult.rows[0]?.subscription_status === 'active' && premiumResult.rows[0]?.subscription_type !== 'free';
+    const maxSlots = isPremium ? 7 : 5;
+
+    if (!Array.isArray(cards) || cards.length > maxSlots) {
+      return res.status(400).json({ error: `Maximum ${maxSlots} cartes` });
     }
 
     for (const c of cards) {
-      if (!Number.isInteger(c.position) || c.position < 1 || c.position > 5) {
-        return res.status(400).json({ error: 'Position invalide (1-5)' });
+      if (!Number.isInteger(c.position) || c.position < 1 || c.position > maxSlots) {
+        return res.status(400).json({ error: `Position invalide (1-${maxSlots})` });
       }
     }
 

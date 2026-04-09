@@ -345,6 +345,12 @@
   flex-shrink: 0;
 }
 
+.lb-premium-badge {
+  font-size: 0.75rem;
+  margin-left: 3px;
+  filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.6));
+}
+
 .lb-player-username {
   color: rgba(255, 255, 255, 0.35);
   font-size: 0.75rem;

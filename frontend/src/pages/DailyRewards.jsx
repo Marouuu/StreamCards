@@ -116,6 +116,9 @@ function DailyRewards({ onBack, onUserUpdate }) {
               {dailyClaim.streakBonus > 0 && (
                 <span className="rw-streak-bonus">+{dailyClaim.streakBonus} bonus</span>
               )}
+              {dailyClaim.isPremium && (
+                <span className="rw-premium-bonus">+{dailyClaim.premiumBonus} Premium</span>
+              )}
             </div>
           </div>
         </div>

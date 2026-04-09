@@ -121,7 +121,10 @@ function Leaderboard({ onBack }) {
                       )}
                       {player.isStreamer && <span className="lb-streamer-badge-podium">STREAMER</span>}
                     </div>
-                    <span className="lb-podium-name">{player.displayName || player.username}</span>
+                    <span className="lb-podium-name">
+                      {player.displayName || player.username}
+                      {player.isPremium && <span className="lb-premium-badge" title="StreamCards+">&#11088;</span>}
+                    </span>
                     <span className="lb-podium-score">
                       {formatScore(player.score, category)}
                       <span className="lb-podium-unit">{getScoreUnit(category)}</span>
@@ -151,6 +154,7 @@ function Leaderboard({ onBack }) {
                   <div className="lb-player-info">
                     <span className="lb-player-name">
                       {player.displayName || player.username}
+                      {player.isPremium && <span className="lb-premium-badge" title="StreamCards+">&#11088;</span>}
                       {player.isStreamer && <span className="lb-streamer-tag">STREAMER</span>}
                     </span>
                     <span className="lb-player-username">@{player.username}</span>
