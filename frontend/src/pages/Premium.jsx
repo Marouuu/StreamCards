@@ -179,18 +179,6 @@ function Premium({ onBack, user }) {
                 </li>
               ))}
             </ul>
-            {currentType === 'streamer_premium' ? (
-              <button className="plan-btn plan-btn-active" disabled>Abonnement actif</button>
-            ) : (
-              <button
-                className="plan-btn plan-btn-streamer"
-                onClick={() => handleCheckout('streamer_premium')}
-                disabled={checkoutLoading}
-              >
-                {checkoutLoading ? 'Redirection...' : 'S\'abonner'}
-              </button>
-            )}
-
             {/* Tier pricing table */}
             <div className="plan-tiers">
               <h4>Pricing equitable</h4>
@@ -212,6 +200,18 @@ function Premium({ onBack, user }) {
                 </tbody>
               </table>
             </div>
+
+            {currentType === 'streamer_premium' ? (
+              <button className="plan-btn plan-btn-active" disabled>Abonnement actif</button>
+            ) : (
+              <button
+                className="plan-btn plan-btn-streamer"
+                onClick={() => handleCheckout('streamer_premium')}
+                disabled={checkoutLoading}
+              >
+                {checkoutLoading ? 'Redirection...' : 'S\'abonner'}
+              </button>
+            )}
           </div>
         )}
       </div>
